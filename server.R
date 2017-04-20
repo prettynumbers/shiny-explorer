@@ -12,6 +12,7 @@ options(shiny.maxRequestSize=10000 * 1024 ^ 2)
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output, session) {
   
+  ##============================= Data Input ===================================
   # File importing handler for excel file.
   observeEvent(input$importFile, {
     inFile <- input$importFile
@@ -62,6 +63,7 @@ shinyServer(function(input, output, session) {
     eval(parse(text=input$dataset))
   })
   
+  # ===========================Update Variables List ===========================
   # when dataset changed populate the summaries and variable selection dropdowns
   observeEvent(input$dataset, {
     dfinfo = getdfinfo(input$dataset)
