@@ -139,9 +139,16 @@ shinyUI(navbarPage("Shiny-Explorer", position="fixed-top",
        sidebarPanel(   
          h3("Data Import"),
          wellPanel(
+           h4("Import Parameters"),
+           radioButtons('sep', 'Separator',
+                        c(Comma=',',
+                          Semicolon=';',
+                          Tab='\t'),
+                        ','),
+           numericInput('sampleSize', 'Numer of Samples', value = 10000),
            h4("CSV:"),
            tags$hr(),
-           fileInput('importFile', label=NULL, accept=c('.xls','.xlsx')),
+           fileInput('importCsvFile', label=NULL, accept=c('.csv')),
            textInput("csvdataframe", "DataFrame Name:", "mycsvdf"),
            actionButton("assigncsv", "Assign to DF")
          )

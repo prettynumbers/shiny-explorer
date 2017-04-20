@@ -3,10 +3,16 @@ require(brew)
 library(tabplot) #install_github("tabplot", username="mtennekes", subdir="pkg")
 library(ggplot2)
 library(readxl)
+library(sqldf)
+
+# Setting global environment
+# Reset the maximum upload file size
+options(shiny.maxRequestSize=10000 * 1024 ^ 2)
 
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output, session) {
   
+  # File importing handler for excel file.
   observeEvent(input$importFile, {
     inFile <- input$importFile
     if(is.null(inFile))
@@ -30,6 +36,25 @@ shinyServer(function(input, output, session) {
     names(x) <- sub(" ", ".", names(x))
     
     assign(input$xlsdataframe,x, envir=.GlobalEnv)
+    updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
+  })
+  
+  observeEvent(input$assigncsv, {
+    if(is.null(input$importCsvFile))
+      return(NULL)
+    x = read.csv.sql(input$importCsvFile$datapath, header = input$header, sep = input$sep,
+                     sql = paste0("select * from file order by random() limit ", 
+                                  input$sampleSize))
+    
+    # clean up 1 - remove NA cols
+    numna = sum(is.na(colnames(x)))
+    newnames = paste("NACOL", 1:numna, sep="")
+    colnames(x)[is.na(colnames(x))]=newnames
+    
+    # clean up 2 - convert spaces to dots
+    names(x) <- sub(" ", ".", names(x))
+    
+    assign(input$csvdataframe,x, envir=.GlobalEnv)
     updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
   })
   

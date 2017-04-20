@@ -1,8 +1,10 @@
+# Load dataframes from system environment
 getDataFrames = function()
 {
   ls(envir=.GlobalEnv)[sapply(ls(envir=.GlobalEnv), function(x){is.data.frame(get(x))})]
 }
 
+# Get information for dataframes
 getdfinfo = function(dfn)
 {
   mydf = get(dfn)
@@ -12,9 +14,14 @@ getdfinfo = function(dfn)
   fields.factor = fields[fields.type %in% c("factor", "binaryfactor")]
   fields.logical = fields[fields.type %in% c("logical","binaryfactor")]
   fields.date = fields[fields.type %in% c("date")]
+  # Convert columns to factor
+  # print(fields.type)
+  for (i in fields.factor) {
+    mydf[, i] = as.factor(mydf[, i])
+  }
   
   getdfinfo = list(
-    numerics = list(name=as.vector(fields.numeric),
+      numerics = list(name=as.vector(fields.numeric),
       mean=sapply(fields.numeric, function(x) { round(mean(mydf[,x], na.rm=T),2) } ),
       min =sapply(fields.numeric, function(x) { min(mydf[,x], na.rm=T)}),
       max =sapply(fields.numeric, function(x) { max(mydf[,x], na.rm=T) }),
@@ -43,6 +50,7 @@ getdfinfo = function(dfn)
   )
 }
 
+# Get numerical variables
 getNumerics = function(dfn) {
   mydf = get(dfn)
   fields = names(mydf)
@@ -74,11 +82,19 @@ getVectorType = function(field, mydf)
 {
   x = "Unknown"
   if (is.double(mydf[,field])) { x = "double" }
-  if (is.character(mydf[,field])) { x = "character" }
+  if (is.character(mydf[,field])) { 
+    x = "character" 
+    if (length(unique(mydf[, field])) < 20) {
+      x = "factor"
+    }
+    }
   if (is.integer(mydf[,field])) {
     x = "integer"
     if (sum(is.na(mydf[,field])) == 0 && max(mydf[,field]) == 1 && min(mydf[,field]) == 0) {
       x="logical"
+    }
+    if (length(unique(mydf[,field])) < 20) {
+      x = "factor"
     }
   }
   if (is.factor(mydf[,field])) { 
@@ -89,7 +105,7 @@ getVectorType = function(field, mydf)
     }
   }
   if (class(mydf[,field])[1] == "POSIXt") { x = "date" }
-  getVectorType = x
+  return(x)
 }
 
 
