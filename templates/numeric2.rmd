@@ -21,7 +21,7 @@ summary(mydf[, c("numeric1","numeric2")])
 
 ## Scatter Plot
 
-```{r scatterplot, fig.width=7, fig.height=6}
+```{r scatterplot, fig.width=12, fig.height=6}
 ggplot(mydf, aes(x=numeric1, y=numeric2)) +
   geom_point() +
   geom_smooth()
@@ -29,11 +29,11 @@ ggplot(mydf, aes(x=numeric1, y=numeric2)) +
 
 ## Correlation Matrix
 
-```{r corrplot, fig.width=7, fig.height=6}
+```{r corrplot, fig.width=12, fig.height=6}
 dkPairs(mydf[,c("numeric1", "numeric2")])
 ```
 
-```{r corrplot2, fig.width=7, fig.height=6}
+```{r corrplot2, fig.width=12, fig.height=6}
 require(ez, quietly=T) 
 ezCor(mydf[,c("numeric1", "numeric2")])
 ```
@@ -96,7 +96,7 @@ mylm = lm(numeric2~numeric1, data=mydf)
 summary(mylm)
 ```
 
-```{r regressionplot}
+```{r regressionplot, fig.width=12, fig.height=6}
 ggplot(mydf, aes(x=numeric1, y=numeric2)) + 
   geom_smooth(method="lm", colour="red", size=1)  
 ```
@@ -107,8 +107,10 @@ The following graph plots the residual values against the fitted values. The dot
 - The spread of the residuals does not change along the x axis (homoskedasticity)
 - The residuals are evenly positioned above and below the regression line along the x axis (there is no pattern to location)
 
-```{r}
-autoplot(mylm, which=1:6, mfrow=c(3,2))
+```{r fig.width=12, fig.height=8}
+# autoplot(mylm, which=1:6, mfrow=c(3,2))
+par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+plot(mylm)
 ```
 
 #### Check for outliers

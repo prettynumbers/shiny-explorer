@@ -22,13 +22,13 @@ getdfinfo = function(dfn)
   
   getdfinfo = list(
       numerics = list(name=as.vector(fields.numeric),
-      mean=sapply(fields.numeric, function(x) { round(mean(mydf[,x], na.rm=T),2) } ),
-      min =sapply(fields.numeric, function(x) { min(mydf[,x], na.rm=T)}),
-      max =sapply(fields.numeric, function(x) { max(mydf[,x], na.rm=T) }),
-      NAs =sapply(fields.numeric, function(x) { sum(is.na(mydf[,x])) }),
-      spark =sapply(fields.numeric, function(x) { 
-        boxstats = boxplot.stats(mydf[,x], do.out=T)
-        paste(span(class="sparkline", values=paste(boxstats$stats, sep="", collapse=",")))
+                      mean=sapply(fields.numeric, function(x) { round(mean(mydf[,x], na.rm=T),2) }),
+                      min =sapply(fields.numeric, function(x) { min(mydf[,x], na.rm=T)}),
+                      max =sapply(fields.numeric, function(x) { max(mydf[,x], na.rm=T) }),
+                      NAs =sapply(fields.numeric, function(x) { sum(is.na(mydf[,x])) }),
+                      spark =sapply(fields.numeric, function(x) { 
+                        boxstats = boxplot.stats(mydf[,x], do.out=T)
+                        paste(span(class="sparkline", values=paste(boxstats$stats, sep="", collapse=",")))
         })
       ),
     factors = list(name=as.vector(fields.factor),

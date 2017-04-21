@@ -32,3 +32,5 @@ All templates undergo (in order):
 * shiny >= 0.11 (bootstrap3)
 * shinyAce
 * tabplot
+* gmodels
+* vcd

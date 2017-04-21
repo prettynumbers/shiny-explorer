@@ -78,22 +78,22 @@ shinyServer(function(input, output, session) {
     if (length(dfinfo$numerics$name)==0)
       output$numericInfo = renderText({"There are no numeric fields"})
     else
-      output$numericInfo = renderTable(as.data.frame(dfinfo$numerics)[,-1],  sanitize.text.function = function(x) x)
+      output$numericInfo = renderTable(as.data.frame(dfinfo$numerics),  sanitize.text.function = function(x) x)
 
     if (length(dfinfo$factors$name)==0)
       output$factorInfo = renderText({"There are no factor fields"})
     else
-      output$factorInfo = renderTable(as.data.frame(dfinfo$factors)[,-1])
+      output$factorInfo = renderTable(as.data.frame(dfinfo$factors))
     
     if (length(dfinfo$dates$name)==0)
       output$dateInfo = renderText({"There are no date fields"})
     else
-      output$dateInfo = renderTable(as.data.frame(dfinfo$dates)[,-1])
+      output$dateInfo = renderTable(as.data.frame(dfinfo$dates))
     
     if (length(dfinfo$logicals$name)==0)
       output$logicalInfo = renderText({"There are no logical fields"})
     else
-      output$logicalInfo = renderTable(as.data.frame(dfinfo$logicals)[,-1])
+      output$logicalInfo = renderTable(as.data.frame(dfinfo$logicals))
     
     session$onFlushed(function() {
       session$sendCustomMessage(type="jsCode", list(code= paste("$('.sparkline').sparkline('html', {type: 'box', raw: true});")))

@@ -40,6 +40,7 @@ chisq.test(table(mydf[,"factor1"]))
 If any one of the expected frequencies is <5 then should use Fischer exact test
 
 ```{r fisher}
-fisher.test(table(mydf[,"factor1"]))
+# Fisher's exact test will be deprecated.
+fisher.test(as.matrix(table(mydf[,"factor1"])))
 ```
 

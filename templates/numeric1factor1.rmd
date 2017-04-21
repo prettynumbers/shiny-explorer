@@ -1,4 +1,9 @@
 # Analysis: 1 numeric by 1 factor
+```{r}
+# Make sure factor variable is factor
+mydf$factor1 = as.factor(mydf$factor1)
+```
+
 
 ```{r debug, echo=FALSE}
 require(ggplot2, quietly=T)

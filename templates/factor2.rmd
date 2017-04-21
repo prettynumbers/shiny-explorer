@@ -1,3 +1,10 @@
+```{r, echo=FALSE}
+# Make sure factor varibales are factor type
+mydf$factor1 <- as.factor(mydf$factor1)
+mydf$factor2 <- as.factor(mydf$factor2)
+```
+
+
 ```{r debug, echo=FALSE}
 require(ggplot2, quietly=T)
 ```
@@ -19,19 +26,19 @@ summary(mydf[, c("factor1","factor2")])
 
 ## Frequency plots
 
-```{r factorplot, fig.width=7, fig.height=6}
+```{r factorplot, fig.width=12, fig.height=6}
 ggplot(mydf, aes(factor1, fill=factor2)) + 
   geom_bar()
 ```
 
-```{r factorplotdodge, fig.width=7, fig.height=6}
+```{r factorplotdodge, fig.width=12, fig.height=6}
 ggplot(mydf, aes(factor1, fill=factor2)) + 
   geom_bar(position="dodge")
 ```
 
-```{r factorplotline, fig.width=7, fig.height=6}
-ggplot(mydf, aes(factor1)) + geom_freqpoly(aes(group=factor2, color=factor2)) 
-  geom_line()
+```{r factorplotline, fig.width=12, fig.height=6}
+ggplot(mydf, aes(factor1)) + 
+  geom_freqpoly(aes(group=factor2, color=factor2), stat="count")
 ```
 
 
@@ -55,12 +62,14 @@ summary(table(mydf$factor1, mydf$factor2))
 ### Fisher Exact Test
 
 ```{r testsfisher, comment=NA}
+# Might be deprecated in the future this test is super unstable, 
+# and might get errors when data size too big
 fisher.test(mydf$factor1, mydf$factor2)
 ```
 
 ## Mosaic Plot
 
-```{r mosaicplot, echo=F, fig.width=7, fig.height=6}
+```{r mosaicplot, echo=F, fig.width=10, fig.height=10}
 require(vcd,quietly=T,warn.conflicts=F)
 mosaic(~ factor1 + factor2, data=mydf, shade=T, legend=T)
 ```
