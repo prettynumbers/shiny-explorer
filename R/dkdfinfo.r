@@ -28,20 +28,26 @@ getdfinfo = function(dfn)
                       NAs =sapply(fields.numeric, function(x) { sum(is.na(mydf[,x])) }),
                       spark =sapply(fields.numeric, function(x) { 
                         boxstats = boxplot.stats(mydf[,x], do.out=T)
-                        paste(span(class="sparkline", values=paste(boxstats$stats, sep="", collapse=",")))
+                        paste(span(class="sparkline-line", values=paste(boxstats$stats, sep="", collapse=",")))
         })
       ),
     factors = list(name=as.vector(fields.factor),
       nlevels = sapply(fields.factor, function(x) { nlevels(mydf[,x]) }),
-      NAs = sapply(fields.factor, function(x) { sum(is.na(mydf[,x])) })),
+      NAs = sapply(fields.factor, function(x) { sum(is.na(mydf[,x])) }),
+      spark =sapply(fields.factor, function(x) { 
+        barstats = hist(as.numeric(mydf[,x]), plot=FALSE, breaks = length(unique(mydf[,x])))$counts
+        paste(span(class="sparkline-bar", values = paste(barstats, sep="", collapse=",")))
+      })),
     logicals = list(name=as.vector(fields.logical),
       mean = sapply(fields.logical, function(x) {
         xx = mydf[,x]
-        if (is.factor(xx)) {
-          levels(xx) = c(0,1)
-          xx=as.numeric(xx)
-        }
-        mean(xx, na.rm=T)    
+        xx = factor(xx)
+        xx = sapply(levels(xx), function(x) as.integer(x == xx))[, 2]
+        # if (is.factor(xx)) {
+        #   levels(xx) = c(0,1)
+        #   xx=as.numeric(xx)
+        # }
+        mean(xx, na.rm=T)
       })),
     dates = list(name=as.vector(fields.date),
       min = sapply(fields.date, function(x) { min(mydf[,x], na.rm=T) }),
@@ -84,7 +90,8 @@ getVectorType = function(field, mydf)
   if (is.double(mydf[,field])) { x = "double" }
   if (is.character(mydf[,field])) { 
     x = "character" 
-    if (length(unique(mydf[, field])) < 20) {
+    # if (length(unique(mydf[, field])) < 20) {
+    if (is.factor(mydf[,field])) {
       x = "factor"
     }
     }
@@ -93,7 +100,8 @@ getVectorType = function(field, mydf)
     if (sum(is.na(mydf[,field])) == 0 && max(mydf[,field]) == 1 && min(mydf[,field]) == 0) {
       x="logical"
     }
-    if (length(unique(mydf[,field])) < 20) {
+    if (length(unique(mydf[,field])) < 4) {
+      mydf[,field] <- as.factor(mydf[,field]) # new
       x = "factor"
     }
   }
@@ -104,7 +112,8 @@ getVectorType = function(field, mydf)
       x="binaryfactor"
     }
   }
-  if (class(mydf[,field])[1] == "POSIXt") { x = "date" }
+  # if (class(mydf[,field])[1] == "POSIXt") { x = "date" }
+  if (inherits(mydf[,field], "Date")) { x = "date"}
   return(x)
 }
 

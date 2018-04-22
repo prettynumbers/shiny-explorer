@@ -77,14 +77,21 @@ shinyServer(function(input, output, session) {
     # Populate the summary tab
     if (length(dfinfo$numerics$name)==0)
       output$numericInfo = renderText({"There are no numeric fields"})
-    else
-      output$numericInfo = renderTable(as.data.frame(dfinfo$numerics),  sanitize.text.function = function(x) x)
+    else {
+      output$numericInfo = renderTable(as.data.frame(dfinfo$numerics),sanitize.text.function = function(x) x)
+      session$onFlushed(function() {
+        session$sendCustomMessage(type="jsCode", list(code= paste("$('.sparkline-line').sparkline('html', {type: 'box', raw: true});")))
+      })
+    }
 
     if (length(dfinfo$factors$name)==0)
       output$factorInfo = renderText({"There are no factor fields"})
-    else
-      output$factorInfo = renderTable(as.data.frame(dfinfo$factors))
-    
+    else {
+      output$factorInfo = renderTable(as.data.frame(dfinfo$factors),sanitize.text.function = function(x) x)
+      session$onFlushed(function() {
+        session$sendCustomMessage(type="jsCode", list(code= paste("$('.sparkline-bar').sparkline('html', {type: 'bar', raw: true});")))
+      })
+    }
     if (length(dfinfo$dates$name)==0)
       output$dateInfo = renderText({"There are no date fields"})
     else
@@ -94,10 +101,7 @@ shinyServer(function(input, output, session) {
       output$logicalInfo = renderText({"There are no logical fields"})
     else
       output$logicalInfo = renderTable(as.data.frame(dfinfo$logicals))
-    
-    session$onFlushed(function() {
-      session$sendCustomMessage(type="jsCode", list(code= paste("$('.sparkline').sparkline('html', {type: 'box', raw: true});")))
-    })
+
     
   })
   
