@@ -22,7 +22,7 @@ selectizeRenderStr = "
 #mydata <- read.csv("http://www.ats.ucla.edu/stat/data/binary.csv")
 
 # Define UI for dataset viewer application
-shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
+shinyUI(navbarPage("Shiny Explorer", position = "fixed-top",
   tabPanel("Explorer", icon = icon("list"),
     sidebarLayout(
       sidebarPanel(
@@ -48,21 +48,21 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
         ),
         
         accordion("fieldsAccordion", 
-          accordionPanel("Numerics", 
+          accordionPanel("Numeric Variables", 
             selectizeInput("numerics", label = "", choices = NULL, selected = "", multiple = T, #NB: choices is filled by observing input$dataset
-              options = list(placeholder = "Select numeric(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""), 
+              options = list(placeholder = "Select numeric variable(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""), 
                 labelField = "label", render = I(selectizeRenderStr))), expanded = T),
-          accordionPanel("Factors", 
+          accordionPanel("Factor Variables", 
             selectizeInput("factors", label = "", choices = NULL, selected = "", multiple = T,
-              options = list(placeholder = "Select factor(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""),
+              options = list(placeholder = "Select factor variable(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""),
                 labelField = "label", render = I(selectizeRenderStr)))),
-          accordionPanel("Dates", 
+          accordionPanel("Date Variables", 
             selectizeInput("dates", label = "", choices = NULL, selected = "", multiple = T, 
-              options = list(placeholder = "Select date(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""),
+              options = list(placeholder = "Select date variable(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""),
                 labelField = "label", render = I(selectizeRenderStr)))),
-          accordionPanel("Logicals", 
+          accordionPanel("Logical Variables", 
             selectizeInput("logicals", label = "", choices = NULL, selected = "", multiple = T,
-              options = list(placeholder = "Select logical(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""))))
+              options = list(placeholder = "Select logical variable(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""))))
         ),
         
         accordion("optionsAccordion",
@@ -85,22 +85,22 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
                    htmlwidgets::getDependency('sparkline'),
                    h4("Dimensions"),
                    textOutput("dimensions"),
-                   h4("Numerics"),
+                   h4("Numeric Variables"),
                    DT::dataTableOutput("numericInfo"),
-                   h4("Factors"),
+                   h4("Factor Variables"),
                    DT::dataTableOutput("factorInfo"),
-                   h4("Dates"),
+                   h4("Date Variables"),
                    DT::dataTableOutput("dateInfo"),
-                   h4("Logicals"),
+                   h4("Logical Variables"),
                    DT::dataTableOutput("logicalInfo")
                    # ,plotOutput("tabplot")
           ),
           
           navbarMenu("Data",
-                     tabPanel("TabPlot",
-                              checkboxInput("limittabplot", label = "Show selected variables only"),
-                              plotOutput("mytabplot")
-                     ),
+                     # tabPanel("TabPlot",
+                     #          checkboxInput("limittabplot", label = "Show selected variables only"),
+                     #          plotOutput("mytabplot")
+                     # ),
                      tabPanel("Table", dataTableOutput("mydt")
                      ),
                      tabPanel("PivotTable", rpivotTableOutput("pivotTable"))
@@ -116,8 +116,8 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
     ) # sidebarLayout
   ), # tabPanel(Explorer)
   
-  navbarMenu("Import", icon = icon("list"),
-    tabPanel("Excel", icon = icon("list"),
+  navbarMenu("Import", icon = icon("upload"),
+    tabPanel("Excel", icon = icon("file-excel-o"),
       sidebarLayout(
         sidebarPanel(   
           h3("Data Import"),
@@ -133,7 +133,7 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
         mainPanel()
       )
     ),
-    tabPanel("CSV", icon = icon("list"),
+    tabPanel("CSV", icon = icon("table"),
       sidebarLayout(
        sidebarPanel(   
          h3("Data Import"),

@@ -1,4 +1,4 @@
-```{r debug, echo=FALSE, warning=FALSE}
+```{r debug, echo = FALSE, warning = FALSE}
 require(ggplot2, quietly=T)
 require(highr)
 opts_chunk$set(comment="") # remove the comment symbol from knitr output
@@ -11,7 +11,7 @@ opts_chunk$set(message=F, warning=F) # unless debugging
 #   hilight(x, format="html")
 # })
 ```
-# Analysis: 1 numeric
+# Analysis: 1 Numeric Variable
 
 ## Inputs
 
@@ -21,45 +21,44 @@ Selected 1 numeric variable in dataframe mydf
 ## Summary statistics
 
 ```{r summary}
-# summary
 summary(mydf[,"numeric1"])
 ```
 
 ## Index plot
 
-```{r indexplot, fig.width=12, fig.height=6}
-plot(mydf[,"numeric1"])
+```{r indexplot, fig.width = 12, fig.height = 6}
+plot(mydf[, "numeric1"])
 ```
 
 
 ## Spread of values
 
-```{r histo, fig.width=12, fig.height=6, warning=FALSE, message=FALSE}
-ggplot(mydf, aes(x=numeric1)) +
+```{r histo, fig.width = 12, fig.height = 6, warning = FALSE, message = FALSE}
+ggplot(mydf, aes(x = numeric1)) +
   geom_histogram()
 ```
 
-```{r boxplot, fig.width=12, fig.height=6, warning=FALSE, message=FALSE}
-ggplot(mydf, aes(x=factor(1), y=numeric1)) +
+```{r boxplot, fig.width = 12, fig.height = 6, warning = FALSE, message = FALSE}
+ggplot(mydf, aes(x = factor(1), y = numeric1)) +
   geom_boxplot()
 ```
 
 ## Distribution
 
-```{r normality, fig.width=12, fig.height=10}
-dkPlotNormality(mydf[,"numeric1"])
+```{r normality, fig.width = 12, fig.height = 10}
+dkPlotNormality(mydf[, "numeric1"])
 ```
 
 ### Test of normality
 
-```{r Test for normality, comment=NA}
+```{r Test for normality, comment = NA}
 # test for normality based on sample size (this is because R function's limitation)
 if (nrow(mydf) >= 5000) {
   # If sample size greater than 5000 than perform Kolmogorov-Smirnov test
   ks.test(x = mydf[, "numeric1"], y = "pnorm", alternative = "two.sided")
 }else{
   # If sample size smaller than 5000 than perform Shapiro test
-  shapiro.test(mydf[,"numeric1"])
+  shapiro.test(mydf[, "numeric1"])
 }
 
 ```
@@ -73,8 +72,8 @@ Consider transforming the variable or using non-parametric tests.
 
 Consider using a log transformation for positive skew (long right tail).
 
-```{r histolog, fig.width=7, fig.height=6, warning=FALSE, message=FALSE}
-ggplot(mydf, aes(x=log(numeric1))) +
+```{r histolog, fig.width = 7, fig.height = 6, warning = FALSE, message = FALSE}
+ggplot(mydf, aes(x = log(numeric1))) +
   geom_histogram() +
   geom_density()
 ```

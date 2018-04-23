@@ -1,8 +1,8 @@
-# Analysis: factor1
-
-```{r debug, echo=FALSE}
-require(ggplot2, quietly=T)
+```{r debug, echo = FALSE}
+require(ggplot2, quietly = T)
 ```
+
+# Analysis: 1 Factor Variable
 
 ## Inputs
 
@@ -12,7 +12,6 @@ Selected 1 factor variable in dataframe mydf
 ```{r table}
 table(mydf[,"factor1"])
 ```
-
 
 ```{r indexplot, fig.width=7, fig.height=6}
 plot(mydf[,"factor1"])
