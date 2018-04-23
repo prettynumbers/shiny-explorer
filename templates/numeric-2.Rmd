@@ -1,8 +1,8 @@
-```{r setup, echo=FALSE}
-require(ggplot2, quietly=T)
-require(grid, quietly=T)
-opts_chunk$set(comment="") # remove the comment symbol from knitr output
-opts_chunk$set(message=F, warning=F) # unless debugging
+```{r setup, echo = FALSE}
+require(ggplot2, quietly = T)
+require(grid, quietly = T)
+opts_chunk$set(comment = "") # remove the comment symbol from knitr output
+opts_chunk$set(message = F, warning = F) # unless debugging
 ```
 
 # Analysis: 2 Numerics
@@ -16,13 +16,13 @@ Selected variables in dataframe mydf
 ## Summary statistics
 
 ```{r summary}
-summary(mydf[, c("numeric1","numeric2")])
+summary(mydf[, c("numeric1", "numeric2")])
 ```
 
 ## Scatter Plot
 
 ```{r scatterplot, fig.width=12, fig.height=6}
-ggplot(mydf, aes(x=numeric1, y=numeric2)) +
+ggplot(mydf, aes(x = numeric1, y = numeric2)) +
   geom_point() +
   geom_smooth()
 ```
@@ -30,12 +30,12 @@ ggplot(mydf, aes(x=numeric1, y=numeric2)) +
 ## Correlation Matrix
 
 ```{r corrplot, fig.width=12, fig.height=6}
-dkPairs(mydf[,c("numeric1", "numeric2")])
+dkPairs(mydf[, c("numeric1", "numeric2")])
 ```
 
 ```{r corrplot2, fig.width=12, fig.height=6}
-require(ez, quietly=T) 
-ezCor(mydf[,c("numeric1", "numeric2")])
+require(ez, quietly = T) 
+ezCor(mydf[, c("numeric1", "numeric2")])
 ```
 
 ## Correlation Tests
@@ -55,9 +55,9 @@ with(mydf, cor.test(numeric1, numeric2))
 ### Reporting Correlations
 
 <% if (cor.test(mydf$numeric1, mydf$numeric2)$p.value < 0.05) { %> 
-There is a significant relationship between numeric1 and numeric2, *r=`r cor(mydf$numeric1, mydf$numeric2)`, `r dkpval(cor.test(mydf$numeric1, mydf$numeric2)$p.value)`*.
+There is a significant relationship between numeric1 and numeric2, *r =`r cor(mydf$numeric1, mydf$numeric2)`, `r dkpval(cor.test(mydf$numeric1, mydf$numeric2)$p.value)`*.
 <% } else { %>
-There is no significant relationship between numeric1 and numeric2 (Pearson p>0.05)
+There is no significant relationship between numeric1 and numeric2 (Pearson p > 0.05)
 <% } %>
 
 ### R^2
@@ -79,9 +79,9 @@ with(mydf, cor.test(numeric1, numeric2, method="spearman"))
 Test of significance: Kendall's Tau (non-parametric). Use if small dataset with many tied ranks.
 
 ```{r kendall}
-table(mydf$numeric1)[table(mydf$numeric1)>1]
-table(mydf$numeric2)[table(mydf$numeric2)>1]
-with(mydf, cor.test(numeric1, numeric2, method="kendall"))
+table(mydf$numeric1)[table(mydf$numeric1) > 1]
+table(mydf$numeric2)[table(mydf$numeric2) > 1]
+with(mydf, cor.test(numeric1, numeric2, method = "kendall"))
 ```
 
 ## Regression
@@ -92,13 +92,13 @@ Regression fits a straight line to the data and finds it's slope. Regression tes
 - Check the *parameter* p values - this measures if the parameter slope is significantly different from 0
 
 ```{r regression}
-mylm = lm(numeric2~numeric1, data=mydf)
+mylm = lm(numeric2 ~ numeric1, data = mydf)
 summary(mylm)
 ```
 
 ```{r regressionplot, fig.width=12, fig.height=6}
-ggplot(mydf, aes(x=numeric1, y=numeric2)) + 
-  geom_smooth(method="lm", colour="red", size=1)  
+ggplot(mydf, aes(x = numeric1, y = numeric2)) + 
+  geom_smooth(method = "lm", colour = "red", size = 1)  
 ```
 
 ### Regression Diagnostics
@@ -121,10 +121,8 @@ Are there any points that dramatically alter the
 dfbeta(mylm)
 ```
 
-
 ## Paired T-Test
 
 ```{r}
-  t.test(mydf$numeric1, mydf$numeric2, paired=T)
+t.test(mydf$numeric1, mydf$numeric2, paired = T)
 ```
-

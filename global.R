@@ -17,7 +17,8 @@ clear.labels <- function(x) {
   return(x)
 }
 
-map.df <- readRDS("/Users/khanoa/box/VMAC BIOSTAT/DATA/MAP/mergedData/MAP_bh_d20180301_m20180301.rds")
-map.df <- map.df[, c("map.id", "epoch", "enrolled.dx.factor", grep("^np.*", names(map.df), v = T)[1:20], grep("^csf.*", names(map.df), v = T)[1:20]), ]
-map.df <- clear.labels(map.df)
-map.df[, grep("date|notes", names(map.df), v = T)] <- NULL
+# map.df <- readRDS("/Users/khanoa/box/VMAC BIOSTAT/DATA/MAP/mergedData/MAP_bh_d20180301_m20180301.rds")
+MAP_WMH_Descriptive_20180322 <- readRDS("/Users/khanoa/box/VMAC BIOSTAT/MAP WMH Descriptive (AJ)/data/MAP_WMH_Descriptive_20180322.rds")
+MAP_WMH_Descriptive_20180322 <- clear.labels(MAP_WMH_Descriptive_20180322)
+# map.df <- map.df[map.df$epoch == 1, c("map.id", "epoch", "enrolled.dx.factor", grep("^np.*", names(map.df), v = T)[1:20], grep("^csf.*", names(map.df), v = T)[1:20]), ]
+MAP_WMH_Descriptive_20180322[, grep("date|notes", names(MAP_WMH_Descriptive_20180322), v = T)] <- NULL

@@ -1,5 +1,5 @@
-```{r setup, echo=FALSE}
-require(ggplot2, quietly=T)
+```{r setup, echo = FALSE}
+require(ggplot2, quietly = T)
 ```
 
 # Analysis: Multiple Numerics by 1 factor
@@ -7,7 +7,7 @@ require(ggplot2, quietly=T)
 ## Inputs
 
 Selected numeric variables in dataframe mydf
-```{r allnumerics, echo=FALSE, results="asis"}
+```{r allnumerics, echo = FALSE, results = "asis"}
 cat("* ")
 cat(numericlist, sep="\n* ")
 ```
@@ -19,30 +19,30 @@ Factor = factor1
 ## T-Test table
 
 ```{r ttesttable, results="asis", echo=T}
-
 getstars = function(x) {
-  if (x<0.001) return("***")
-  if (x<0.01) return("**")
-  if (x<0.05) return("*")
+  if (x < 0.001) return("***")
+  if (x < 0.01) return("**")
+  if (x < 0.05) return("*")
   return("")
 }
 
-getttest = function(mynumeric, sigfig=2) {
+getttest = function(mynumeric, sigfig = 2) {
   template = paste("%.",sigfig,"f (%.",sigfig,"f)",sep="")
   n1 = mydf[mydf$factor1 == levels(mydf$factor1)[1], mynumeric]
   n2 = mydf[mydf$factor1 == levels(mydf$factor1)[2], mynumeric]
-  pval=t.test(n1,n2)$p.value
+  pval = t.test(n1,n2)$p.value
   return(c(
-    sprintf(template, mean(n1,na.rm=T), sd(n1,na.rm=T)),
-    sprintf(template, mean(n2,na.rm=T), sd(n2,na.rm=T)),
-    paste(format.pval(pval, eps=0.0001), getstars(pval), sep="")))
-  
+    sprintf(template, mean(n1,na.rm = T), sd(n1,na.rm = T)),
+    sprintf(template, mean(n2,na.rm = T), sd(n2,na.rm = T)),
+    paste0(format.pval(pval, eps = 0.0001), getstars(pval))
+    )
+  )
 }
 
-tbl=t(sapply(numericlist, getttest, 2))
+tbl = t(sapply(numericlist, getttest, 2))
 colnames(tbl) = c(levels(mydf$factor1)[1], levels(mydf$factor1)[2], "p")
 
-kable(tbl, format="html", table.attr='class="data table table-bordered table-condensed"')
+kable(tbl, format = "html", table.attr = 'class="data table table-bordered table-condensed"')
 ```
 
 <% } %>
@@ -51,7 +51,7 @@ kable(tbl, format="html", table.attr='class="data table table-bordered table-con
 
 Used to perform linear regression where there are repeated measures from the same subject (factor1)
 
-```{r, echo=F}
+```{r, echo = F}
 require(lme4)
 
 for (i in 1:length(numericlist)) {
@@ -66,7 +66,6 @@ formulas <- as.formula(paste(formulas, " (1 | factor1)"))
 # print(formulas)
 formulas2 <- as.formula(paste(numericlist[1], "~", " 1 + (1 | factor1)"))
 # print(formulas2)
-
 ```
 
 ```{r}

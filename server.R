@@ -90,6 +90,11 @@ shinyServer(function(input, output, session) {
     updateSelectInput(session, "logicals", choices = dfinfo$logicals$Variable)
     
     # Populate the summary tab
+    ## Dimensions
+    output$dimensions = renderText({
+      paste0("Observations = ", dfinfo$dimensions[1], "; ", "Variables = ", dfinfo$dimensions[2])
+    })
+    
     ## Numerics
     if (length(dfinfo$numerics$Variable) == 0)
       output$numericInfo = renderText({"There are no numeric fields"})
@@ -132,8 +137,7 @@ shinyServer(function(input, output, session) {
         DT::datatable(
           as.data.frame(dfinfo$dates, stringsAsFactors = FALSE),
           rownames = FALSE,
-          escape = FALSE,
-          options = list(drawCallback = cb)
+          escape = FALSE
         )
       })
     }
@@ -148,8 +152,7 @@ shinyServer(function(input, output, session) {
         DT::datatable(
           as.data.frame(dfinfo$logicals, stringsAsFactors = FALSE),
           rownames = FALSE,
-          escape = FALSE,
-          options = list(drawCallback = cb)
+          escape = FALSE
         )
       })
     }

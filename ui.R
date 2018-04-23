@@ -62,7 +62,7 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
                 labelField = "label", render = I(selectizeRenderStr)))),
           accordionPanel("Logicals", 
             selectizeInput("logicals", label = "", choices = NULL, selected = "", multiple = T,
-              options = list(placeholder = "Select logical(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = "") )))
+              options = list(placeholder = "Select logical(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""))))
         ),
         
         accordion("optionsAccordion",
@@ -71,18 +71,20 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
         
         p(
           # use actionButton rather than submitButton so that changing the dataframe dropdown automatically updates the field selects
-          actionButton("go",strong("Analyse"), class="hvr-icon-spin"), #icon("play")), 
-          actionButton("deleteSelections", "Clear Selections", class="hvr-icon-sink-away") #icon("trash-o"))
+          actionButton("go", strong("Analyse"), class = "hvr-icon-spin"), #icon("play")), 
+          actionButton("deleteSelections", "Clear Selections", class = "hvr-icon-sink-away") #icon("trash-o"))
         )
         
       ), # sidebarPanel
       
       mainPanel(
         
-        tabsetPanel(id="mainPanelTabset",
+        tabsetPanel(id = "mainPanelTabset",
           
           tabPanel("Variables",  #tabsetPanel(id="summaryTabset",
                    htmlwidgets::getDependency('sparkline'),
+                   h4("Dimensions"),
+                   textOutput("dimensions"),
                    h4("Numerics"),
                    DT::dataTableOutput("numericInfo"),
                    h4("Factors"),
@@ -95,36 +97,34 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
           ),
           
           navbarMenu("Data",
-            tabPanel("TabPlot",
-              checkboxInput("limittabplot", label="Show selected variables only"),
-              plotOutput("mytabplot")
-            ),
-            tabPanel("Table", 
-              dataTableOutput("mydt")
-            ),
-            tabPanel("PivotTable",
-                     rpivotTableOutput("pivotTable"))
+                     tabPanel("TabPlot",
+                              checkboxInput("limittabplot", label = "Show selected variables only"),
+                              plotOutput("mytabplot")
+                     ),
+                     tabPanel("Table", dataTableOutput("mydt")
+                     ),
+                     tabPanel("PivotTable", rpivotTableOutput("pivotTable"))
           ),
           tabPanel("Analysis", 
-            htmlOutput("analysis")
+                   htmlOutput("analysis")
           ),
           tabPanel("Source",
-            aceEditor("acermd", mode="markdown"))
+                   aceEditor("acermd", mode = "markdown"))
         )
       ) # mainPanel
       
     ) # sidebarLayout
   ), # tabPanel(Explorer)
   
-  navbarMenu("Import", icon=icon("list"),
-    tabPanel("Excel", icon=icon("list"),
+  navbarMenu("Import", icon = icon("list"),
+    tabPanel("Excel", icon = icon("list"),
       sidebarLayout(
         sidebarPanel(   
           h3("Data Import"),
           wellPanel(
             h4("Excel .xls/.xlsx:"),
             tags$hr(),
-            fileInput('importFile', label=NULL, accept=c('.xls','.xlsx')),
+            fileInput('importFile', label = NULL, accept = c('.xls','.xlsx')),
             selectInput("excelsheets", "Sheet:", choices = c()),
             textInput("xlsdataframe", "DataFrame Name:", "myxlsdf"),
             actionButton("assignxls", "Assign to DF")
@@ -133,21 +133,21 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
         mainPanel()
       )
     ),
-    tabPanel("CSV", icon=icon("list"),
+    tabPanel("CSV", icon = icon("list"),
       sidebarLayout(
        sidebarPanel(   
          h3("Data Import"),
          wellPanel(
            h4("Import Parameters"),
            radioButtons('sep', 'Separator',
-                        c(Comma=',',
-                          Semicolon=';',
-                          Tab='\t'),
+                        c(Comma = ',',
+                          Semicolon = ';',
+                          Tab = '\t'),
                         ','),
            numericInput('sampleSize', 'Numer of Samples', value = 10000),
            h4("CSV:"),
            tags$hr(),
-           fileInput('importCsvFile', label=NULL, accept=c('.csv')),
+           fileInput('importCsvFile', label = NULL, accept = c('.csv')),
            textInput("csvdataframe", "DataFrame Name:", "mycsvdf"),
            actionButton("assigncsv", "Assign to DF")
          )
@@ -155,11 +155,10 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
        mainPanel()
       )
     )
-  ), # navbarMenu(Import)
-  
-  navbarMenu("Tests", icon=icon("bar-chart"),
-    tabPanel("2 Sample"),
-    tabPanel("Correlation")
-  ) # navbarMenu(Tests)
-  
+  ) # navbarMenu(Import)
+  # ,
+  # navbarMenu("Tests", icon = icon("bar-chart"),
+  #   tabPanel("2 Sample"),
+  #   tabPanel("Correlation")
+  # ) # navbarMenu(Tests)
 ))

@@ -1,14 +1,12 @@
 # Load dataframes from system environment
-getDataFrames = function()
-{
-  ls(envir = .GlobalEnv)[sapply(ls(envir = .GlobalEnv), function(x){is.data.frame(get(x))})]
+getDataFrames = function() {
+  ls(envir = .GlobalEnv)[sapply(ls(envir = .GlobalEnv), function(x) { is.data.frame(get(x)) })]
 }
 
 # Get information for dataframes
-getdfinfo = function(dfn)
-{
-  mydf = dfn  # uncomment this line and comment the next line for testing
-  # mydf = get(dfn)
+getdfinfo = function(dfn) {
+  # mydf = dfn  # uncomment this line and comment the next line for testing
+  mydf = get(dfn)
   fields = names(mydf)
   fields.type = sapply(fields, getVectorType, mydf)
   fields.numeric = fields[fields.type %in% c("numeric", "integer", "double", "logical")]
@@ -22,39 +20,48 @@ getdfinfo = function(dfn)
   }
 
   getdfinfo = list(
+    dimensions = list(
+      dim(mydf)[1], dim(mydf)[2]
+    ),
     numerics = list(
       Variable = as.vector(fields.numeric),
-      NAs = sapply(fields.numeric, function(x) { sum(is.na(mydf[, x])) }),
+      Missing = sapply(fields.numeric, function(x) { sum(is.na(mydf[, x])) }),
       Mean = sapply(fields.numeric, function(x) { round(mean(mydf[, x], na.rm = T), 2) }),
       Median = sapply(fields.numeric, function(x) { round(median(mydf[, x], na.rm = T), 2) }),
       SD = sapply(fields.numeric, function(x) { round(sd(mydf[, x], na.rm = T), 2) }),
       Minimum = sapply(fields.numeric, function(x) { min(mydf[, x], na.rm = T) }),
       Maximum = sapply(fields.numeric, function(x) { max(mydf[, x], na.rm = T) }),
-      spark = sapply(fields.numeric, function(x) { spk_chr(mydf[, x], type = "box") })
-      # ,
-      # spark = sapply(fields.numeric, function(x) {
-      #   boxstats = boxplot.stats(mydf[,x], do.out = T)
-      #   paste(span(class="sparkline-line", values = paste(boxstats$stats, sep = "", collapse = ",")))
-      # })
+      Plot = sapply(fields.numeric, function(x) { 
+        spk_chr(
+          values = mydf[, x], 
+          type = "box",
+          raw = FALSE, 
+          width = 50, height = 25
+        )
+      })
     ),
     factors = list(
       Variable = as.vector(fields.factor),
-      NAs = sapply(fields.factor, function(x) { sum(is.na(mydf[, x])) }),
+      Missing = sapply(fields.factor, function(x) { sum(is.na(mydf[, x])) }),
       Levels = sapply(fields.factor, function(x) { nlevels(mydf[, x]) }),
-      spark = sapply(fields.factor, function(x) {
-        barstats = table(mydf[, x])
-        #barstats = hist(mydf[, x], plot = FALSE, breaks = length(unique(mydf[, x])))$counts
-        spk_chr(barstats, type = "bar")
+      Counts = sapply(fields.factor, function(x) {
+        temp1 <- as.data.frame(table(mydf[, x]))
+        temp2 <- apply(temp1, 1, function(x) paste0(trimws(x[1]), ": ", trimws(x[2])))
+        paste(temp2, collapse = '<br />')
+      }),
+      Plot = sapply(fields.factor, function(x) {
+        spk_chr(
+          values = unname(table(as.numeric(mydf[, x]))), 
+          type = "bar", 
+          tooltipValueLookups = list(levels = levels(mydf[, x])), 
+          tooltipFormat = '{{offset:levels}} : {{value}}', 
+          width = 50, height = 25, barWidth = 20, barSpacing = 5, chartRangeMin = 0
+        )
       })
-      # ,
-      # spark =sapply(fields.factor, function(x) {
-      #   barstats = hist(as.numeric(mydf[,x]), plot=FALSE, breaks = length(unique(mydf[,x])))$counts
-      #   paste(span(class="sparkline-bar", values = paste(barstats, sep = "", collapse = ",")))
-      # })
     ),
     logicals = list(
       Variable = as.vector(fields.logical),
-      NAs = sapply(fields.logical, function(x) { sum(is.na(mydf[, x])) }),
+      Missing = sapply(fields.logical, function(x) { sum(is.na(mydf[, x])) }),
       Mean = sapply(fields.logical, function(x) {
         xx = mydf[,x]
         xx = factor(xx)
@@ -63,7 +70,7 @@ getdfinfo = function(dfn)
       })),
     dates = list(
       Variable = as.vector(fields.date),
-      NAs = sapply(fields.date, function(x) { sum(is.na(mydf[, x])) })),
+      Missing = sapply(fields.date, function(x) { sum(is.na(mydf[, x])) })),
       Minimum = sapply(fields.date, function(x) { min(mydf[, x], na.rm = T) }),
       Maximum = sapply(fields.date, function(x) { max(mydf[, x], na.rm = T) })
   )
@@ -88,7 +95,7 @@ getFactors = function(dfn) {
   fields.factor = fields[fields.type %in% c("factor", "binaryfactor")]
   
   cbind(label = sapply(fields.factor, function(x) { 
-    sprintf("%s/nlevels=%.0f NAs=%.0f", x, nlevels(mydf[, x]), sum(is.na(mydf[, x])))
+    sprintf("%s/nlevels=%.0f NAs=%.0f", x, nlevels(factor(mydf[, x])), sum(is.na(mydf[, x])))
   }))
 }
 
@@ -126,13 +133,15 @@ getVectorType = function(field, mydf) {
     }
   }
   if (is.factor(mydf[, field])) { 
+    mydf[, field] <- as.factor(mydf[, field]) # new
     x = "factor"
     if (nlevels(mydf[, field]) == 2) {
+      mydf[, field] <- as.factor(mydf[, field]) # new
       x = "binaryfactor"
     }
   }
   # if (class(mydf[,field])[1] == "POSIXt") { x = "date" }
-  if (inherits(mydf[, field], "Date")) { 
+  if (inherits(mydf[, field], "Date") | inherits(mydf[, field], "POSIXt")) { 
     x = "date"
   }
   return(x)

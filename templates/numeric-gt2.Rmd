@@ -1,5 +1,5 @@
-```{r setup, echo=FALSE}
-require(ggplot2, quietly=T)
+```{r setup, echo = FALSE}
+require(ggplot2, quietly = T)
 ```
 
 # Analysis: Multiple Numerics
@@ -7,7 +7,7 @@ require(ggplot2, quietly=T)
 ## Inputs
 
 Selected variables in dataframe mydf
-```{r allnumerics, echo=FALSE, results="asis"}
+```{r allnumerics, echo = FALSE, results = "asis"}
 cat("* ")
 cat(numericlist, sep="\n* ")
 ```
@@ -18,14 +18,13 @@ cat(numericlist, sep="\n* ")
 summary(mydf[, numericlist])
 ```
 
-
 ## Correlation Matrix
 
-```{r corrplot, fig.width=7, fig.height=6}
-dkPairs(mydf[,numericlist])
+```{r corrplot, fig.width = 7, fig.height = 6}
+dkPairs(mydf[, numericlist])
 ```
 
-```{r corrplot2, fig.width=7, fig.height=6}
-require(ez, quietly=T)
-ezCor(mydf[,numericlist])
+```{r corrplot2, fig.width = 7, fig.height = 6}
+require(ez, quietly = T)
+ezCor(mydf[, numericlist])
 ```
