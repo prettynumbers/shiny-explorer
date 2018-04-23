@@ -7,11 +7,10 @@ Shiny (www.rstudio.com/shiny) based data explorer with report templates based on
 
 ## Instructions
 
-From github:
+From GitHub:
 
 ```
-library(shiny)
-runGitHub("shiny-explorer","dkilfoyle")
+shiny::runGitHub(repo = "shiny-explorer", username = "prettynumbers")
 ```
 
 From downloaded source:
