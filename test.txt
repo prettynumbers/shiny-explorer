@@ -1,0 +1,317 @@
+diff --git a/server.R b/server.R
+index c05308e..de296c8 100644
+--- a/server.R
++++ b/server.R
+@@ -4,11 +4,10 @@ library(tabplot) #install_github("tabplot", username="mtennekes", subdir="pkg")
+ library(ggplot2)
+ library(readxl)
+ library(sqldf)
+-library(DT)
+ 
+ # Setting global environment
+ # Reset the maximum upload file size
+-options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
++options(shiny.maxRequestSize=10000 * 1024 ^ 2)
+ 
+ # Define server logic required to summarize and view the selected dataset
+ shinyServer(function(input, output, session) {
+@@ -17,50 +16,51 @@ shinyServer(function(input, output, session) {
+   # File importing handler for excel file.
+   observeEvent(input$importFile, {
+     inFile <- input$importFile
+-    if (is.null(inFile))
++    if(is.null(inFile))
+       return(NULL)
+     # hack for readxl no extension open issue #85
+-    file.rename(inFile$datapath, paste0(inFile$datapath, ".xlsx"))
+-    xlsfile = paste0(inFile$datapath, ".xlsx")
+-    updateSelectInput(session, "excelsheets", choices = excel_sheets(xlsfile))
++    file.rename(inFile$datapath, paste(inFile$datapath, ".xlsx", sep=""))
++    xlsfile = paste(inFile$datapath, ".xlsx", sep="")
++    updateSelectInput(session, "excelsheets", choices=excel_sheets(xlsfile))
+   })
+   
+   observeEvent(input$assignxls, {
+-    xlsfile = paste0(input$importFile$datapath, ".xlsx")
+-    x = read_excel(xlsfile, input$excelsheets)
++    xlsfile = paste(input$importFile$datapath, ".xlsx", sep="")
++    x=read_excel(xlsfile, input$excelsheets)
+     
+     # clean up 1 - remove NA cols
+     numna = sum(is.na(colnames(x)))
+-    newnames = paste0("NACOL", 1:numna)
+-    colnames(x)[is.na(colnames(x))] = newnames
++    newnames = paste("NACOL", 1:numna, sep="")
++    colnames(x)[is.na(colnames(x))]=newnames
+     
+     # clean up 2 - convert spaces to dots
+     names(x) <- sub(" ", ".", names(x))
+     
+-    assign(input$xlsdataframe,x, envir = .GlobalEnv)
++    assign(input$xlsdataframe,x, envir=.GlobalEnv)
+     updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
+   })
+   
+   observeEvent(input$assigncsv, {
+-    if (is.null(input$importCsvFile))
+-      return (NULL)
++    if(is.null(input$importCsvFile))
++      return(NULL)
+     x = read.csv.sql(input$importCsvFile$datapath, header = input$header, sep = input$sep,
+-                     sql = paste0("select * from file order by random() limit ", input$sampleSize))
++                     sql = paste0("select * from file order by random() limit ", 
++                                  input$sampleSize))
+     
+     # clean up 1 - remove NA cols
+     numna = sum(is.na(colnames(x)))
+-    newnames = paste0("NACOL", 1:numna)
+-    colnames(x)[is.na(colnames(x))] = newnames
++    newnames = paste("NACOL", 1:numna, sep="")
++    colnames(x)[is.na(colnames(x))]=newnames
+     
+     # clean up 2 - convert spaces to dots
+     names(x) <- sub(" ", ".", names(x))
+     
+-    assign(input$csvdataframe, x, envir = .GlobalEnv)
++    assign(input$csvdataframe,x, envir=.GlobalEnv)
+     updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
+   })
+   
+   getSelectedDF <- reactive({
+-    eval(parse(text = input$dataset))
++    eval(parse(text=input$dataset))
+   })
+   
+   # ===========================Update Variables List ===========================
+@@ -69,59 +69,58 @@ shinyServer(function(input, output, session) {
+     dfinfo = getdfinfo(input$dataset)
+     
+     # Update the field selects
+-    updateSelectInput(session, "numerics", choices = getNumerics(input$dataset))
+-    updateSelectInput(session, "factors", choices = getFactors(input$dataset))
+-    updateSelectInput(session, "dates", choices = getDates(input$dataset))
+-    updateSelectInput(session, "logicals", choices = dfinfo$logicals$name)
++    updateSelectInput(session, "numerics", choices=getNumerics(input$dataset))
++    updateSelectInput(session, "factors", choices=getFactors(input$dataset))
++    updateSelectInput(session, "dates", choices=getDates(input$dataset))
++    updateSelectInput(session, "logicals", choices=dfinfo$logicals$name)
+     
+     # Populate the summary tab
+-    if (length(dfinfo$numerics$name) == 0)
++    if (length(dfinfo$numerics$name)==0)
+       output$numericInfo = renderText({"There are no numeric fields"})
+     else {
+-      # output$numericInfo = DT::renderDT(as.data.frame(dfinfo$numerics))
+-      output$numericInfo = DT::renderDT({as.data.frame(dfinfo$numerics)})
+-      # session$onFlushed(function() {
+-      #   session$sendCustomMessage(type = "jsCode", list(code = paste("$('.sparkline-line').sparkline('html', {type: 'box', raw: true});")))
+-      # })
++      output$numericInfo = renderTable(as.data.frame(dfinfo$numerics),sanitize.text.function = function(x) x)
++      session$onFlushed(function() {
++        session$sendCustomMessage(type="jsCode", list(code= paste("$('.sparkline-line').sparkline('html', {type: 'box', raw: true});")))
++      })
+     }
+ 
+-    if (length(dfinfo$factors$name) == 0)
++    if (length(dfinfo$factors$name)==0)
+       output$factorInfo = renderText({"There are no factor fields"})
+     else {
+-      output$factorInfo = DT::renderDT({ as.data.frame(dfinfo$factors)})
+-      # output$factorInfo = renderTable(as.data.frame(dfinfo$factors), sanitize.text.function = function(x) x)
+-      # session$onFlushed(function() {
+-      #   session$sendCustomMessage(type = "jsCode", list(code = paste("$('.sparkline-bar').sparkline('html', {type: 'bar', raw: true});")))
+-      # })
++      output$factorInfo = renderTable(as.data.frame(dfinfo$factors),sanitize.text.function = function(x) x)
++      session$onFlushed(function() {
++        session$sendCustomMessage(type="jsCode", list(code= paste("$('.sparkline-bar').sparkline('html', {type: 'bar', raw: true});")))
++      })
+     }
+-    if (length(dfinfo$dates$name) == 0)
++    if (length(dfinfo$dates$name)==0)
+       output$dateInfo = renderText({"There are no date fields"})
+     else
+-      output$dateInfo = DT::renderDT({ as.data.frame(dfinfo$dates)})
+-      # output$dateInfo = renderTable(as.data.frame(dfinfo$dates))
++      output$dateInfo = renderTable(as.data.frame(dfinfo$dates))
+     
+-    if (length(dfinfo$logicals$name) == 0)
++    if (length(dfinfo$logicals$name)==0)
+       output$logicalInfo = renderText({"There are no logical fields"})
+     else
+-      output$logicalInfo = DT::renderDT({ as.data.frame(dfinfo$logicals)})
+-      # output$logicalInfo = renderTable(as.data.frame(dfinfo$logicals))
++      output$logicalInfo = renderTable(as.data.frame(dfinfo$logicals))
++
++    
+   })
+   
+   observeEvent(input$deleteSelections, {
+     # clear the selected fields
+     dfinfo = getdfinfo(input$dataset)
+-    updateSelectInput(session, "numerics", choices = getNumerics(input$dataset))
+-    updateSelectInput(session, "factors", choices = getFactors(input$dataset))
+-    updateSelectInput(session, "dates", choices = getDates(input$dataset))
+-    updateSelectInput(session, "logicals", choices = dfinfo$logicals$name)
++    updateSelectInput(session, "numerics", choices=getNumerics(input$dataset))
++    updateSelectInput(session, "factors", choices=getFactors(input$dataset))
++    updateSelectInput(session, "dates", choices=getDates(input$dataset))
++    updateSelectInput(session, "logicals", choices=dfinfo$logicals$name)
+   })
+   
+   observeEvent(input$go, {
+     # show the Analysis tab panel 
+-    updateTabsetPanel(session, "mainPanelTabset", selected = "Analysis")  
++    updateTabsetPanel(session, "mainPanelTabset", selected="Analysis")  
+   })
+   
+   getAnalysis = eventReactive(input$go, {
++    
+     # Load the selected variables and dataframe
+     #TODO refactor the get selected vars code - need to fix selectizeInput captioning
+     rmdsub = "Error: There is no report template for this combination of selected fields."
+@@ -134,75 +133,75 @@ shinyServer(function(input, output, session) {
+     if ((length(numerics) + length(factors) + length(dates) + length(logicals)) == 0)
+       output$analysis = return("Select some fields first")
+     
+-    progress = shiny::Progress$new(session, min = 1, max = 3)
++    progress = shiny::Progress$new(session, min=1, max=3)
+     on.exit(progress$close())
+-    progress$set(message = "Building report")
++    progress$set(message="Building report")
+     
+     # could simplify following by using knit_expand and {{mydf}}${{numeric1}} etc in templates
+     # but this makes the templates hard to read and write
+     
+-    if ((length(numerics) == 0) & (length(factors) == 1)) {
+-      rmdsource = paste(readLines("templates/factor-1.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, factor1 = factors[1]))
++    if ((length(numerics) == 0) & (length(factors)==1)) {
++      rmdsource = paste(readLines("templates/factor1.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, factor1=factors[1]))
+     }
+     
+-    if ((length(numerics) == 0) & (length(factors) == 2)) {
+-      rmdsource = paste(readLines("templates/factor-2.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, factor1 = factors[1], factor2 = factors[2]))
++    if ((length(numerics) == 0) & (length(factors)==2)) {
++      rmdsource = paste(readLines("templates/factor2.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, factor1=factors[1], factor2=factors[2]))
+     }
+     
+-    if ((length(numerics) == 1) & (length(factors) == 0)) {
+-      rmdsource = paste(readLines("templates/numeric-1.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, numeric1 = numerics[1]))
++    if ((length(numerics) == 1) & (length(factors)==0)) {
++      rmdsource = paste(readLines("templates/numeric1.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, numeric1=numerics[1]))
+     }
+     
+-    if ((length(numerics) == 1) & (length(factors) == 1)) {
+-      rmdsource = paste(readLines("templates/numeric-1-factor-1.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, numeric1 = numerics[1], factor1 = factors[1]))
++    if ((length(numerics) == 1) & (length(factors)==1)) {
++      rmdsource = paste(readLines("templates/numeric1factor1.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, numeric1=numerics[1], factor1=factors[1]))
+     }
+     
+-    if ((length(numerics) == 1) & (length(factors) == 2)) {
+-      rmdsource = paste(readLines("templates/numeric1factor2.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, numeric1 = numerics[1], factor1 = factors[1], factor2 = factors[2]))
++    if ((length(numerics) == 1) & (length(factors)==2)) {
++      rmdsource = paste(readLines("templates/numeric1factor2.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, numeric1=numerics[1], factor1=factors[1], factor2=factors[2]))
+     }
+     
+-    if ((length(numerics) == 2) & (length(factors) == 0)) {
+-      rmdsource = paste(readLines("templates/numeric-2.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, numeric1 = numerics[1], numeric2 = numerics[2]))
++    if ((length(numerics) == 2) & (length(factors)==0)) {
++      rmdsource = paste(readLines("templates/numeric2.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, numeric1=numerics[1], numeric2=numerics[2]))
+     }
+     
+-    if ((length(numerics) > 2) & (length(factors) == 0)) {
+-      rmdsource = paste(readLines("templates/numeric-gt2.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, numericlist = paste0('c("', paste(numerics, collapse='", "'), '")'))) 
++    if ((length(numerics) > 2) & (length(factors)==0)) {
++      rmdsource = paste(readLines("templates/numeric3.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, numericlist=paste('c("', paste(numerics, collapse='","'), '")', sep=""))) 
+     }
+     
+     if ((length(numerics) == 2) & (length(factors) == 1)) {
+-      rmdsource = paste(readLines("templates/numeric-2-factor-1.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, numeric1 = numerics[1], numeric2 = numerics[2], factor1 = factors[1]))
++      rmdsource = paste(readLines("templates/numeric2factor1.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, numeric1=numerics[1], numeric2=numerics[2], factor1=factors[1]))
+     } 
+     
+-    if ((length(numerics) > 2) & (length(factors) == 1)) {
+-      rmdsource = paste(readLines("templates/numeric-gt2-factor-1.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, numericlist = paste0('c("', paste(numerics, collapse='", "'), '")'), factor1 = factors[1])) 
++    if ((length(numerics) > 2) & (length(factors)==1)) {
++      rmdsource = paste(readLines("templates/numeric3factor1.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, numericlist=paste('c("', paste(numerics, collapse='","'), '")', sep=""), factor1=factors[1])) 
+     }
+     
+     if ((length(logicals) == 1) & (length(factors) > 0)) {
+-      rmdsource = paste(readLines("templates/logical-1.Rmd"), collapse = "\n")
+-      rmdsub = dkReplace(rmdsource, c(mydf = dfstr, logical1 = logicals[1], factorlist = paste0('c("', paste(factors, collapse='", "'), '")')))
++      rmdsource = paste(readLines("templates/logical1.rmd"), collapse="\n")
++      rmdsub = dkReplace(rmdsource, c(mydf=dfstr, logical1=logicals[1], factorlist=paste('c("', paste(factors, collapse='","'), '")', sep="")))
+     }
+     
+     # Some templates have conditional segements - hence use brew 
+     # TODO: explore using whiskers instead of dkReplace/brew
+     progress$inc()
+-    brewout = capture.output(brew(text = rmdsub))
++    brewout = capture.output(brew(text=rmdsub))
+     
+-    updateAceEditor(session, "acermd", mode = "markdown", value = paste(brewout, collapse = "\n"))
++    updateAceEditor(session, "acermd", mode="markdown", value=paste(brewout, collapse="\n"))
+     
+     # EXPERIMENT: rmarkdown version
+     # Outcome: no particular advantage, require extra files and highlighting js = not used
+-#     writeLines(brewout, con=file("temp.Rmd"))
++#     writeLines(brewout, con=file("temp.rmd"))
+ #     library(rmarkdown)
+-#     render("temp.Rmd", html_fragment(toc=T))
++#     render("temp.rmd", html_fragment(toc=T))
+ #     myhtml = paste(readLines("temp.html"), collapse="\n")
+     
+     if (input$chkggtheme) {
+@@ -211,9 +210,9 @@ shinyServer(function(input, output, session) {
+     else
+       theme_set(theme_gray())
+     
+-    render_html()  # this sets hooks to use highr
+-    myhtml = paste(  #paste(readLines("templates/navbar.rms"), collapse="\n"),
+-      try(knit2html(text = brewout, stylesheet = "", fragment.only = TRUE)),
++    render_html() # this sets hooks to use highr
++    myhtml = paste(#paste(readLines("templates/navbar.rms"), collapse="\n"),
++      try(knit2html(text = brewout, stylesheet="", fragment.only = TRUE)),
+       "<script>
+             // javascript highlighting not needed if using render_html()
+             // $('#analysis pre code').each(function(i, e) {hljs.highlightBlock(e)});
+@@ -224,10 +223,12 @@ shinyServer(function(input, output, session) {
+         </script>", 
+       sep = '\n')
+     
++    
++
+     progress$inc()
+ 
+     session$onFlushed(function() {
+-      updateTabsetPanel(session, "mainPanelTabset", selected = "Analysis") 
++      updateTabsetPanel(session, "mainPanelTabset", selected="Analysis") 
+     })
+ 
+     return(myhtml)
+@@ -238,7 +239,7 @@ shinyServer(function(input, output, session) {
+     getAnalysis()
+   })
+   
+-  output$mydt = renderDataTable({getSelectedDF()}, options = list(lengthMenu = c(5, 10, 25), pageLength = 10))
++  output$mydt = renderDataTable({getSelectedDF()}, options=list(lengthMenu = c(5, 10, 25), pageLength = 10))
+   
+   output$mytabplot = renderPlot({
+     if (input$limittabplot) {

@@ -2,9 +2,6 @@ source("R/dkdfinfo.r")
 source("R/dkgraph.r")
 source("R/dkutils.r")
 
-htmlwidgets::getDependency("sparkline", "sparkline")
-
-
 # to run
 # shiny:::runApp("../shiny-explorer")
 # shiny:::runApp("../shiny-explorer", launch.browser = rstudio::viewer)
@@ -25,10 +22,8 @@ selectizeRenderStr = "
 #mydata <- read.csv("http://www.ats.ucla.edu/stat/data/binary.csv")
 
 # Define UI for dataset viewer application
-shinyUI(navbarPage("Shiny-Explorer", position="fixed-top",
-  
-  tabPanel("Explorer", icon=icon("list"),
-    
+shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
+  tabPanel("Explorer", icon = icon("list"),
     sidebarLayout(
       sidebarPanel(
         
@@ -49,25 +44,25 @@ shinyUI(navbarPage("Shiny-Explorer", position="fixed-top",
         wellPanel(
           selectInput("dataset", "Dataframe:", choices = getDataFrames()),
           p(helpText("Choose the desired fields in the dropdowns",
-            "and click Analyse to show an analysis."))
+                     "and click Analyse to show an analysis."))
         ),
         
         accordion("fieldsAccordion", 
           accordionPanel("Numerics", 
-            selectizeInput("numerics", label="", choices=NULL, selected="", multiple=T, #NB: choices is filled by observing input$dataset
-              options=list(placeholder="Select numeric(s)", dropdownParent = "body", plugins=list(remove_button="", drag_drop=""), 
-                labelField="label", render = I(selectizeRenderStr))), expanded=T),
+            selectizeInput("numerics", label = "", choices = NULL, selected = "", multiple = T, #NB: choices is filled by observing input$dataset
+              options = list(placeholder = "Select numeric(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""), 
+                labelField = "label", render = I(selectizeRenderStr))), expanded = T),
           accordionPanel("Factors", 
-            selectizeInput("factors", label="", choices=NULL, selected="", multiple=T,
-              options=list(placeholder="Select factor(s)", dropdownParent = "body", plugins=list(remove_button="", drag_drop=""),
-                labelField="label", render = I(selectizeRenderStr)))),
+            selectizeInput("factors", label = "", choices = NULL, selected = "", multiple = T,
+              options = list(placeholder = "Select factor(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""),
+                labelField = "label", render = I(selectizeRenderStr)))),
           accordionPanel("Dates", 
-            selectizeInput("dates", label="", choices=NULL, selected="", multiple=T, 
-              options=list(placeholder="Select date(s)", dropdownParent = "body", plugins=list(remove_button="", drag_drop=""),
-                labelField="label", render = I(selectizeRenderStr)))),
+            selectizeInput("dates", label = "", choices = NULL, selected = "", multiple = T, 
+              options = list(placeholder = "Select date(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = ""),
+                labelField = "label", render = I(selectizeRenderStr)))),
           accordionPanel("Logicals", 
-            selectizeInput("logicals", label="", choices=NULL, selected="", multiple=T,
-              options=list(placeholder="Select logical(s)", dropdownParent = "body", plugins=list(remove_button="", drag_drop="") )))
+            selectizeInput("logicals", label = "", choices = NULL, selected = "", multiple = T,
+              options = list(placeholder = "Select logical(s)", dropdownParent = "body", plugins = list(remove_button = "", drag_drop = "") )))
         ),
         
         accordion("optionsAccordion",
@@ -87,15 +82,16 @@ shinyUI(navbarPage("Shiny-Explorer", position="fixed-top",
         tabsetPanel(id="mainPanelTabset",
           
           tabPanel("Variables",  #tabsetPanel(id="summaryTabset",
-            h4("Numerics"),
-            dataTableOutput("numericInfo"),
-            h4("Factors"),
-            dataTableOutput("factorInfo"),
-            h4("Dates"),
-            dataTableOutput("dateInfo"),
-            h4("Logicals"),
-            dataTableOutput("logicalInfo")
-            # ,plotOutput("tabplot")
+                   htmlwidgets::getDependency('sparkline'),
+                   h4("Numerics"),
+                   DT::dataTableOutput("numericInfo"),
+                   h4("Factors"),
+                   DT::dataTableOutput("factorInfo"),
+                   h4("Dates"),
+                   DT::dataTableOutput("dateInfo"),
+                   h4("Logicals"),
+                   DT::dataTableOutput("logicalInfo")
+                   # ,plotOutput("tabplot")
           ),
           
           navbarMenu("Data",
