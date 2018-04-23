@@ -33,7 +33,7 @@ getdfinfo = function(dfn) {
       Maximum = sapply(fields.numeric, function(x) { max(mydf[, x], na.rm = T) }),
       Plot = sapply(fields.numeric, function(x) { 
         spk_chr(
-          values = mydf[, x], 
+          values = round(mydf[, x], 2), 
           type = "box",
           raw = FALSE, 
           width = 50, height = 25
@@ -62,17 +62,19 @@ getdfinfo = function(dfn) {
     logicals = list(
       Variable = as.vector(fields.logical),
       Missing = sapply(fields.logical, function(x) { sum(is.na(mydf[, x])) }),
-      Mean = sapply(fields.logical, function(x) {
+      PercentTrue = sapply(fields.logical, function(x) {
         xx = mydf[,x]
         xx = factor(xx)
         xx = sapply(levels(xx), function(x) as.integer(x == xx))[, 2]
-        mean(xx, na.rm = T)
-      })),
+        round(100 * mean(xx, na.rm = T), 2)
+      })
+    ),
     dates = list(
       Variable = as.vector(fields.date),
-      Missing = sapply(fields.date, function(x) { sum(is.na(mydf[, x])) })),
+      Missing = sapply(fields.date, function(x) { sum(is.na(mydf[, x])) }),
       Minimum = sapply(fields.date, function(x) { min(mydf[, x], na.rm = T) }),
       Maximum = sapply(fields.date, function(x) { max(mydf[, x], na.rm = T) })
+    )
   )
 }
 
@@ -95,7 +97,7 @@ getFactors = function(dfn) {
   fields.factor = fields[fields.type %in% c("factor", "binaryfactor")]
   
   cbind(label = sapply(fields.factor, function(x) { 
-    sprintf("%s/nlevels=%.0f NAs=%.0f", x, nlevels(factor(mydf[, x])), sum(is.na(mydf[, x])))
+    sprintf("%s/Levels: %.0f | NAs: %.0f", x, nlevels(factor(mydf[, x])), sum(is.na(mydf[, x])))
   }))
 }
 
@@ -106,7 +108,7 @@ getDates = function(dfn) {
   fields.date = fields[fields.type %in% c("date")]
   
   cbind(label = sapply(fields.date, function(x) {
-    sprintf("%s/min=%s max=%s NAs=%.0f", x, min(mydf[, x], na.rm = T), max(mydf[, x], na.rm = T), sum(is.na(mydf[, x]))) 
+    sprintf("%s/Min.: %s | Max.: %s | NAs: %.0f", x, min(mydf[, x], na.rm = T), max(mydf[, x], na.rm = T), sum(is.na(mydf[, x]))) 
   }))
 }
 
@@ -117,8 +119,8 @@ getVectorType = function(field, mydf) {
   }
   if (is.character(mydf[, field])) { 
     x = "character" 
-    # if (length(unique(mydf[, field])) < 20) {
-    if (is.factor(mydf[, field])) {
+    if (length(unique(mydf[, field])) < 6) {
+      mydf[, field] <- as.factor(mydf[, field]) # new
       x = "factor"
     }
   }
@@ -127,7 +129,7 @@ getVectorType = function(field, mydf) {
     if (sum(is.na(mydf[, field])) == 0 && max(mydf[, field]) == 1 && min(mydf[, field]) == 0) {
       x = "logical"
     }
-    if (length(unique(mydf[, field])) < 4) {
+    if (length(unique(mydf[, field])) < 6) {
       mydf[, field] <- as.factor(mydf[, field]) # new
       x = "factor"
     }
