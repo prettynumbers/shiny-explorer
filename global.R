@@ -3,6 +3,7 @@ library(shinyAce)
 require(rpivotTable) #install_github(c("ramnathv/htmlwidgets", "smartinsightsfromdata/rpivotTable"))
 data(iris)
 data(airquality)
+
 clear.labels <- function(x) {
   if(is.list(x)) {
     for(i in 1 : length(x)) class(x[[i]]) <- setdiff(class(x[[i]]), 'labelled') 

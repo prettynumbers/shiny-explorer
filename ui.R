@@ -2,6 +2,9 @@ source("R/dkdfinfo.r")
 source("R/dkgraph.r")
 source("R/dkutils.r")
 
+htmlwidgets::getDependency("sparkline", "sparkline")
+
+
 # to run
 # shiny:::runApp("../shiny-explorer")
 # shiny:::runApp("../shiny-explorer", launch.browser = rstudio::viewer)
@@ -85,13 +88,13 @@ shinyUI(navbarPage("Shiny-Explorer", position="fixed-top",
           
           tabPanel("Variables",  #tabsetPanel(id="summaryTabset",
             h4("Numerics"),
-            tableOutput("numericInfo"),
+            dataTableOutput("numericInfo"),
             h4("Factors"),
-            tableOutput("factorInfo"),
+            dataTableOutput("factorInfo"),
             h4("Dates"),
-            tableOutput("dateInfo"),
+            dataTableOutput("dateInfo"),
             h4("Logicals"),
-            tableOutput("logicalInfo")
+            dataTableOutput("logicalInfo")
             # ,plotOutput("tabplot")
           ),
           
