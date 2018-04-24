@@ -1,6 +1,6 @@
 require(knitr)
 require(brew)
-library(tabplot)  # devtools::install_github("mtennekes/tabplot", subdir = "pkg")
+library(tabplot) #install_github("tabplot", username="mtennekes", subdir="pkg")
 library(ggplot2)
 library(readxl)
 library(sqldf)
@@ -11,7 +11,19 @@ library(sparkline)
 # Reset the maximum upload file size
 options(shiny.maxRequestSize = 10000 * 1024 ^ 2)
 
+# cb <- htmlwidgets::JS('function(){debugger;HTMLWidgets.staticRender();}')
+# line_string <- "type: 'line', lineColor: 'black', fillColor: '#ccc', highlightLineColor: 'orange', highlightSpotColor: 'orange'"
+# cd <- list(list(targets = 1, render = JS("function(data, type, full){ return '<span class=sparkSamples>' + data + '</span>' }")))
+# cb = JS(paste0("function (oSettings, json) {\n  $('.sparkSamples:not(:has(canvas))').sparkline('html', { ", 
+#                line_string, " });\n}"), collapse = "")
 cb <- htmlwidgets::JS('function(){debugger;HTMLWidgets.staticRender();}')
+# cb <- JS(paste0("function (oSettings, json) {
+#   $('.sparkSeries:not(:has(canvas))').sparkline('html', { ", 
+#                 line_string, " });
+#                 $('.sparkSamples:not(:has(canvas))').sparkline('html', { ", 
+#                 box_string, " });
+#                 }"), collapse = "")
+
 
 # Define server logic required to summarize and view the selected dataset
 shinyServer(function(input, output, session) {
@@ -20,8 +32,8 @@ shinyServer(function(input, output, session) {
   # File importing handler for excel file.
   observeEvent(input$importFile, {
     inFile <- input$importFile
-    if(is.null(inFile)) { return(NULL) }
-    
+    if (is.null(inFile))
+      return(NULL)
     # hack for readxl no extension open issue #85
     file.rename(inFile$datapath, paste0(inFile$datapath, ".xlsx"))
     xlsfile = paste0(inFile$datapath, ".xlsx")
@@ -40,12 +52,13 @@ shinyServer(function(input, output, session) {
     # clean up 2 - convert spaces to dots
     names(x) <- sub(" ", ".", names(x))
     
-    assign(input$xlsdataframe, x, envir = .GlobalEnv)
+    assign(input$xlsdataframe,x, envir = .GlobalEnv)
     updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
   })
   
   observeEvent(input$assigncsv, {
-    if(is.null(input$importCsvFile)) { return(NULL) }
+    if (is.null(input$importCsvFile))
+      return (NULL)
     x = read.csv.sql(input$importCsvFile$datapath, header = input$header, sep = input$sep,
                      sql = paste0("select * from file order by random() limit ", input$sampleSize))
     
@@ -78,65 +91,73 @@ shinyServer(function(input, output, session) {
     
     # Populate the summary tab
     ## Dimensions
-    if (length(dfinfo$numerics$Variable) + length(dfinfo$factors$Variable) + 
-        length(dfinfo$logicals$Variable) + length(dfinfo$dates$Variable) == 0) {
-      output$dimensions = renderText({"The dataframe is empty."})
-    } else {
-      output$dimensions = renderText({
-        paste0("Observations = ", dfinfo$dimensions[1], "; ", "Variables = ", dfinfo$dimensions[2])
-      })
-    }
+    output$dimensions = renderText({
+      paste0("Observations = ", dfinfo$dimensions[1], "; ", "Variables = ", dfinfo$dimensions[2])
+    })
     
     ## Numerics
-    # if(identical(dfinfo$numerics$Variable, character(0))) {
-    if (length(dfinfo$numerics$Variable) == 0) {
+    if (length(dfinfo$numerics$Variable) == 0)
       output$numericInfo = renderText({"There are no numeric fields"})
-    } else {
-      output$numericInfo = renderDT(
-        as.data.frame(dfinfo$numerics, stringsAsFactors = FALSE),
-        rownames = FALSE,
-        escape = FALSE,
-        options = list(drawCallback = cb)
-      )
+    else {
+      output$numericInfo = DT::renderDataTable({
+        DT::datatable(
+          as.data.frame(dfinfo$numerics, stringsAsFactors = FALSE),
+          rownames = FALSE,
+          escape = FALSE,
+          options = list(drawCallback = cb)
+        )
+      })
+      # output$numericInfo = DT::renderDT(as.data.frame(dfinfo$numerics))
     }
     
     ## Factors
-    # if (identical(dfinfo$factors$Variable, character(0))) {
-    if (length(dfinfo$factors$Variable) == 0) {
+    if (length(dfinfo$factors$Variable) == 0)
       output$factorInfo = renderText({"There are no factor fields"})
-    } else {
-      output$factorInfo = renderDT(
-        as.data.frame(dfinfo$factors, stringsAsFactors = FALSE),
-        rownames = FALSE,
-        escape = FALSE,
-        options = list(drawCallback = cb)
-      )
+    else {
+      output$factorInfo = DT::renderDataTable({
+        DT::datatable(
+          as.data.frame(dfinfo$factors, stringsAsFactors = FALSE),
+          rownames = FALSE,
+          escape = FALSE,
+          options = list(drawCallback = cb)
+        )
+      })
+      # output$factorInfo = DT::renderDT({ as.data.frame(dfinfo$factors)})
+      # output$factorInfo = renderTable(as.data.frame(dfinfo$factors), sanitize.text.function = function(x) x)
+      # session$onFlushed(function() {
+      #   session$sendCustomMessage(type = "jsCode", list(code = paste("$('.sparkline-bar').sparkline('html', {type: 'bar', raw: true});")))
+      # })
     }
     
     ## Dates
-    # if (identical(dfinfo$dates$Variable, character(0))) {
-    if (length(dfinfo$dates$Variable) == 0) {
+    if (length(dfinfo$dates$Variable) == 0)
       output$dateInfo = renderText({"There are no date fields"})
-    } else {
-      output$dateInfo = renderDT(
-        as.data.frame(dfinfo$dates, stringsAsFactors = FALSE),
-        rownames = FALSE,
-        escape = FALSE
-      )
+    else {
+      output$dateInfo = DT::renderDataTable({
+        DT::datatable(
+          as.data.frame(dfinfo$dates, stringsAsFactors = FALSE),
+          rownames = FALSE,
+          escape = FALSE
+        )
+      })
     }
+    # output$dateInfo = DT::renderDT({ as.data.frame(dfinfo$dates)})
+    # output$dateInfo = renderTable(as.data.frame(dfinfo$dates))
     
     ## Logicals
-    # if (identical(dfinfo$logicals$Variable, character(0))) {
-    if (length(dfinfo$logicals$Variable) == 0) {
+    if (length(dfinfo$logicals$Variable) == 0)
       output$logicalInfo = renderText({"There are no logical fields"})
-    } else {
-      output$logicalInfo = renderDT(
-        as.data.frame(dfinfo$logicals, stringsAsFactors = FALSE),
-        colnames = c('% TRUE' = 'PercentTrue'),
-        rownames = FALSE,
-        escape = FALSE
-      )
+    else {
+      output$logicalInfo = DT::renderDataTable({
+        DT::datatable(
+          as.data.frame(dfinfo$logicals, stringsAsFactors = FALSE),
+          rownames = FALSE,
+          escape = FALSE
+        )
+      })
     }
+    # output$logicalInfo = DT::renderDT({ as.data.frame(dfinfo$logicals)})
+    # output$logicalInfo = renderTable(as.data.frame(dfinfo$logicals))
   })
   
   observeEvent(input$deleteSelections, {
@@ -270,14 +291,7 @@ shinyServer(function(input, output, session) {
     getAnalysis()
   })
   
-  output$mydt = DT::renderDT(
-    { getSelectedDF() }, 
-    options = list(
-      lengthMenu = c(5, 10, 25), 
-      pageLength = 10,
-      scrollX = TRUE
-    )
-  )
+  output$mydt = renderDataTable({getSelectedDF()}, options = list(lengthMenu = c(5, 10, 25), pageLength = 10))
   
   output$mytabplot = renderPlot({
     if (input$limittabplot) {

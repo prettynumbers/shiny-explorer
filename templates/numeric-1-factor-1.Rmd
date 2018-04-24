@@ -1,14 +1,14 @@
-# Analysis: 1 Numeric Variable by 1 Factor Variable
-
+# Analysis: 1 numeric by 1 factor
 ```{r}
 # Make sure factor variable is factor
 mydf$factor1 = as.factor(mydf$factor1)
 ```
 
-```{r debug, echo = FALSE}
-require(ggplot2, quietly = T)
-opts_chunk$set(comment = "") # remove the comment symbol from knitr output
-opts_chunk$set(message = F, warning = F) # unless debugging
+
+```{r debug, echo=FALSE}
+require(ggplot2, quietly=T)
+opts_chunk$set(comment="") # remove the comment symbol from knitr output
+opts_chunk$set(message=F, warning=F) # unless debugging
 ```
 
 ## Inputs
@@ -19,21 +19,21 @@ Selected variables in dataframe mydf
 
 ### Index Plot
 
-```{r indexplot, fig.width = 7, fig.height = 6}
-ggplot(data = mydf, aes(x = mydf$map.id, y = numeric1, color = factor1)) +
+```{r indexplot, fig.width=7, fig.height=6}
+ggplot(data=mydf, aes(x=row.names(mydf), y=numeric1, color=factor1)) +
   geom_point()
 ```
 
 ## Summary statistics
 
-```{r summary, comment = NA, results = "asis"}
+```{r summary, comment=NA, results="asis"}
 require(plyr)
-kable(ddply(mydf, "factor1", summarize, numeric1.mean = mean(numeric1), numeric1.min = min(numeric1), numeric1.max = max(numeric1)), format = "html", row.names = NA, table.attr = 'class="data table table-bordered table-condensed"')
+kable(ddply(mydf, "factor1", summarize, numeric1.mean = mean(numeric1), numeric1.min=min(numeric1), numeric1.max=max(numeric1)), format="html", row.names=NA, table.attr='class="data table table-bordered table-condensed"')
 ```
 
 ### Plot of means
 
-```{r normality, fig.width = 7, fig.height = 6, warning = FALSE, message = FALSE}
+```{r normality, fig.width=7, fig.height=6, warning=FALSE, message=FALSE}
 with(mydf, dkPlotMeans2(numeric1, factor1))
 ```
 
@@ -41,13 +41,13 @@ with(mydf, dkPlotMeans2(numeric1, factor1))
 
 Visually check that the distributions are normal and show homoscedasticity (similar variance).
 
-```{r histo, fig.width = 7, fig.height = 6, warning = FALSE, message = FALSE}
-ggplot(mydf, aes(x = numeric1, fill = factor1)) +
+```{r histo, fig.width=7, fig.height=6, warning=FALSE, message=FALSE}
+ggplot(mydf, aes(x=numeric1, fill=factor1)) +
   geom_histogram()
 ```
 
-```{r boxplot, fig.width = 7, fig.height = 6, warning= FALSE, message = FALSE}
-ggplot(mydf, aes(x = factor1, y = numeric1)) +
+```{r boxplot, fig.width=7, fig.height=6, warning=FALSE, message=FALSE}
+ggplot(mydf, aes(x=factor1, y=numeric1)) +
   geom_boxplot()
 ```
 
@@ -66,13 +66,13 @@ T-test, and ANOVA require homogeneity of variances (homoscedasticity). If varian
 <% if (nlevels(mydf$factor1) == 2) { %>
 
 ```{r variancetest}
-var.test(numeric1 ~ factor1, mydf)
+  var.test(numeric1~factor1, mydf)
 ```
 
 <% } else { %>
 
 ```{r variancetest}
-bartlett.test(mydf$numeric1, mydf$factor1)
+  bartlett.test(mydf$numeric1, mydf$factor1)
 ```
 
 <% } %>
@@ -96,7 +96,7 @@ with(mydf, wilcox.test(numeric1 ~ factor1))
 ## Anova
 
 ```{r anova}
-aov1 = aov(numeric1 ~ factor1, data = mydf)
+aov1 = aov(numeric1~factor1, data=mydf)
 summary(aov1)
 ```
 
@@ -107,7 +107,7 @@ summary(aov1)
 ### Non-parametric
 
 ```{r}
-with(mydf, kruskal.test(numeric1 ~ factor1))
+with(mydf, kruskal.test(numeric1~factor1))
 ```
 
 ### Post-hoc comparisons using Tukey HSD
@@ -117,14 +117,14 @@ thsd1 = TukeyHSD(aov1)
 thsd1
 ```
 
-```{r tukeyplot, fig.width = 7, fig.height = 6}
+```{r tukeyplot, fig.width=7, fig.height=6}
 plot(thsd1)
 ```
 
 ### Post-hoc comparisons using pairwise t.test with Bonferonni p adjustment
 
 ```{r pairwisettest}
-with(mydf, pairwise.t.test(numeric1, factor1, p.adj = "bonf"))
+with(mydf, pairwise.t.test(numeric1, factor1, p.adj="bonf"))
 ```
 
 <% if (nlevels(mydf$factor1)==2) { %>
@@ -132,6 +132,6 @@ with(mydf, pairwise.t.test(numeric1, factor1, p.adj = "bonf"))
 ## Difference in distribution (Kolmogorov-Smirnov)
 
 ```{r komogorov}
-with(mydf, ks.test(numeric1[factor1 == factor1[levels()[1]]], numeric1[factor1 == factor1[levels()[2]]]))
+with(mydf, ks.test(numeric1[factor1==factor1[levels()[1]]], numeric1[factor1==factor1[levels()[2]]]))
 ```
 <% } %>

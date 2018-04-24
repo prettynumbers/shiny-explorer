@@ -2,7 +2,7 @@
 require(ggplot2, quietly = T)
 ```
 
-# Analysis: Multiple Numeric Variables by 1 Factor Variable
+# Analysis: Multiple Numerics by 1 factor
 
 ## Inputs
 
@@ -18,7 +18,7 @@ Factor = factor1
 
 ## T-Test table
 
-```{r ttesttable, results = "asis", echo = TRUE}
+```{r ttesttable, results="asis", echo=T}
 getstars = function(x) {
   if (x < 0.001) return("***")
   if (x < 0.01) return("**")
@@ -27,7 +27,7 @@ getstars = function(x) {
 }
 
 getttest = function(mynumeric, sigfig = 2) {
-  template = paste("%.", sigfig, "f (%.",sigfig,"f)", sep = "")
+  template = paste("%.",sigfig,"f (%.",sigfig,"f)",sep="")
   n1 = mydf[mydf$factor1 == levels(mydf$factor1)[1], mynumeric]
   n2 = mydf[mydf$factor1 == levels(mydf$factor1)[2], mynumeric]
   pval = t.test(n1,n2)$p.value
@@ -51,7 +51,7 @@ kable(tbl, format = "html", table.attr = 'class="data table table-bordered table
 
 Used to perform linear regression where there are repeated measures from the same subject (factor1)
 
-```{r, echo = FALSE}
+```{r, echo = F}
 require(lme4)
 
 for (i in 1:length(numericlist)) {
