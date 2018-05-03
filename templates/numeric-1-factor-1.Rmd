@@ -28,7 +28,14 @@ ggplot(data=mydf, aes(x=row.names(mydf), y=numeric1, color=factor1)) +
 
 ```{r summary, comment=NA, results="asis"}
 require(plyr)
-kable(ddply(mydf, "factor1", summarize, numeric1.mean = mean(numeric1), numeric1.min=min(numeric1), numeric1.max=max(numeric1)), format="html", row.names=NA, table.attr='class="data table table-bordered table-condensed"')
+kable(
+  ddply(mydf, "factor1", summarize, 
+        numeric1.mean = mean(numeric1), 
+        numeric1.min = min(numeric1), 
+        numeric1.max = max(numeric1)
+  ), 
+  format = "html", row.names = NA, table.attr = 'class="data table table-bordered table-condensed"'
+)
 ```
 
 ### Plot of means

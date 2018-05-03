@@ -1,6 +1,6 @@
-require(knitr)
-require(brew)
-library(tabplot) #install_github("tabplot", username="mtennekes", subdir="pkg")
+library(knitr)
+library(brew)
+# library(tabplot) #install_github("tabplot", username="mtennekes", subdir="pkg")
 library(ggplot2)
 library(readxl)
 library(sqldf)
@@ -44,6 +44,8 @@ shinyServer(function(input, output, session) {
     xlsfile = paste0(input$importFile$datapath, ".xlsx")
     x = read_excel(xlsfile, input$excelsheets)
     
+    x = clear.labels(x)
+    
     # clean up 1 - remove NA cols
     numna = sum(is.na(colnames(x)))
     newnames = paste0("NACOL", 1:numna)
@@ -52,15 +54,17 @@ shinyServer(function(input, output, session) {
     # clean up 2 - convert spaces to dots
     names(x) <- sub(" ", ".", names(x))
     
-    assign(input$xlsdataframe,x, envir = .GlobalEnv)
+    assign(input$xlsdataframe, x, envir = .GlobalEnv)
     updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
   })
   
   observeEvent(input$assigncsv, {
     if (is.null(input$importCsvFile))
       return (NULL)
-    x = read.csv.sql(input$importCsvFile$datapath, header = input$header, sep = input$sep,
+    x = read.csv.sql(file = input$importCsvFile$datapath, header = input$header, sep = input$sep,
                      sql = paste0("select * from file order by random() limit ", input$sampleSize))
+    
+    x = clear.labels(x)
     
     # clean up 1 - remove NA cols
     numna = sum(is.na(colnames(x)))
@@ -71,6 +75,25 @@ shinyServer(function(input, output, session) {
     names(x) <- sub(" ", ".", names(x))
     
     assign(input$csvdataframe, x, envir = .GlobalEnv)
+    updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
+  })
+  
+  observeEvent(input$assignrds, {
+    if (is.null(input$importRdsFile))
+      return (NULL)
+    x = readRDS(input$importRdsFile$datapath)
+    
+    x = clear.labels(x)
+    
+    # clean up 1 - remove NA cols
+    numna = sum(is.na(colnames(x)))
+    newnames = paste0("NACOL", 1:numna)
+    colnames(x)[is.na(colnames(x))] = newnames
+    
+    # clean up 2 - convert spaces to dots
+    names(x) <- sub(" ", ".", names(x))
+    
+    assign(input$rdsdataframe, x, envir = .GlobalEnv)
     updateSelectInput(session, "dataset", "Dataframe:", choices = getDataFrames(), selected = getDataFrames()[1])
   })
   
@@ -96,66 +119,78 @@ shinyServer(function(input, output, session) {
     })
     
     ## Numerics
-    if (length(dfinfo$numerics$Variable) == 0)
-      output$numericInfo = renderText({"There are no numeric fields"})
-    else {
-      output$numericInfo = DT::renderDataTable({
-        DT::datatable(
-          as.data.frame(dfinfo$numerics, stringsAsFactors = FALSE),
-          rownames = FALSE,
-          escape = FALSE,
-          options = list(drawCallback = cb)
+    output$numericInfo = DT::renderDataTable({
+      DT::datatable(
+        as.data.frame(dfinfo$numerics, stringsAsFactors = FALSE),
+        rownames = FALSE,
+        escape = FALSE,
+        options = list(
+          drawCallback = cb,
+          language = list(
+            zeroRecords = "There are no numeric variables in this data set.")
         )
-      })
+      )
+    })
       # output$numericInfo = DT::renderDT(as.data.frame(dfinfo$numerics))
-    }
     
     ## Factors
-    if (length(dfinfo$factors$Variable) == 0)
-      output$factorInfo = renderText({"There are no factor fields"})
-    else {
-      output$factorInfo = DT::renderDataTable({
-        DT::datatable(
-          as.data.frame(dfinfo$factors, stringsAsFactors = FALSE),
-          rownames = FALSE,
-          escape = FALSE,
-          options = list(drawCallback = cb)
+    output$factorInfo = DT::renderDataTable({
+      DT::datatable(
+        as.data.frame(dfinfo$factors, stringsAsFactors = FALSE),
+        rownames = FALSE,
+        escape = FALSE,
+        options = list(
+          drawCallback = cb,
+          language = list(
+            zeroRecords = "There are no factor variables in this data set.")
         )
-      })
-      # output$factorInfo = DT::renderDT({ as.data.frame(dfinfo$factors)})
-      # output$factorInfo = renderTable(as.data.frame(dfinfo$factors), sanitize.text.function = function(x) x)
-      # session$onFlushed(function() {
-      #   session$sendCustomMessage(type = "jsCode", list(code = paste("$('.sparkline-bar').sparkline('html', {type: 'bar', raw: true});")))
-      # })
-    }
+      )
+    })
+    # if (length(dfinfo$factors$Variable) == 0)
+    #   output$factorInfo = renderText({"There are no factor fields"})
+    # else {
+    #   output$factorInfo = DT::renderDataTable({
+    #     DT::datatable(
+    #       as.data.frame(dfinfo$factors, stringsAsFactors = FALSE),
+    #       rownames = FALSE,
+    #       escape = FALSE,
+    #       options = list(drawCallback = cb)
+    #     )
+    #   })
+    #   # output$factorInfo = DT::renderDT({ as.data.frame(dfinfo$factors)})
+    #   # output$factorInfo = renderTable(as.data.frame(dfinfo$factors), sanitize.text.function = function(x) x)
+    #   # session$onFlushed(function() {
+    #   #   session$sendCustomMessage(type = "jsCode", list(code = paste("$('.sparkline-bar').sparkline('html', {type: 'bar', raw: true});")))
+    #   # })
+    # }
     
     ## Dates
-    if (length(dfinfo$dates$Variable) == 0)
-      output$dateInfo = renderText({"There are no date fields"})
-    else {
-      output$dateInfo = DT::renderDataTable({
-        DT::datatable(
-          as.data.frame(dfinfo$dates, stringsAsFactors = FALSE),
-          rownames = FALSE,
-          escape = FALSE
+    output$dateInfo = DT::renderDataTable({
+      DT::datatable(
+        as.data.frame(dfinfo$dates, stringsAsFactors = FALSE),
+        rownames = FALSE,
+        escape = FALSE,
+        options = list(
+          language = list(
+            zeroRecords = "There are no date variables in this data set.")
         )
-      })
-    }
+      )
+    })
     # output$dateInfo = DT::renderDT({ as.data.frame(dfinfo$dates)})
     # output$dateInfo = renderTable(as.data.frame(dfinfo$dates))
     
     ## Logicals
-    if (length(dfinfo$logicals$Variable) == 0)
-      output$logicalInfo = renderText({"There are no logical fields"})
-    else {
-      output$logicalInfo = DT::renderDataTable({
-        DT::datatable(
-          as.data.frame(dfinfo$logicals, stringsAsFactors = FALSE),
-          rownames = FALSE,
-          escape = FALSE
+    output$logicalInfo = DT::renderDataTable({
+      DT::datatable(
+        as.data.frame(dfinfo$logicals, stringsAsFactors = FALSE),
+        rownames = FALSE,
+        escape = FALSE,
+        options = list(
+          language = list(
+            zeroRecords = "There are no logical variables in this data set.")
         )
-      })
-    }
+      )
+    })
     # output$logicalInfo = DT::renderDT({ as.data.frame(dfinfo$logicals)})
     # output$logicalInfo = renderTable(as.data.frame(dfinfo$logicals))
   })
@@ -291,25 +326,32 @@ shinyServer(function(input, output, session) {
     getAnalysis()
   })
   
-  output$mydt = renderDataTable({getSelectedDF()}, options = list(lengthMenu = c(5, 10, 25), pageLength = 10))
+  output$mydt = renderDataTable(
+    {getSelectedDF()}, 
+    options = list(
+      lengthMenu = c(5, 10, 25), 
+      pageLength = 10,
+      scrollX = TRUE
+    )
+  )
   
-  output$mytabplot = renderPlot({
-    if (input$limittabplot) {
-      #TODO refactor the get selected vars code - need to fix selectizeInput captioning
-      numerics = as.vector(sapply(input$numerics, function(x) { strsplit(x, "/")[[1]][1] })) # ugly hack to strip field info from selectizeInput
-      factors = as.vector(sapply(input$factors, function(x) { strsplit(x, "/")[[1]][1] })) 
-      dates = as.vector(sapply(input$dates, function(x) { strsplit(x, "/")[[1]][1] })) 
-      logicals = input$logicals
-      vars = unlist(c(numerics, factors, dates, logicals))
-      if (length(vars) > 0)
-        tableplot(getSelectedDF()[, unlist(c(numerics, factors, dates, logicals))])
-    }
-    else
-      tableplot(getSelectedDF())
-  })
+  # output$mytabplot = renderPlot({
+  #   if (input$limittabplot) {
+  #     #TODO refactor the get selected vars code - need to fix selectizeInput captioning
+  #     numerics = as.vector(sapply(input$numerics, function(x) { strsplit(x, "/")[[1]][1] })) # ugly hack to strip field info from selectizeInput
+  #     factors = as.vector(sapply(input$factors, function(x) { strsplit(x, "/")[[1]][1] })) 
+  #     dates = as.vector(sapply(input$dates, function(x) { strsplit(x, "/")[[1]][1] })) 
+  #     logicals = input$logicals
+  #     vars = unlist(c(numerics, factors, dates, logicals))
+  #     if (length(vars) > 0)
+  #       tableplot(getSelectedDF()[, unlist(c(numerics, factors, dates, logicals))])
+  #   }
+  #   else
+  #     tableplot(getSelectedDF())
+  # })
   
   output$pivotTable = renderRpivotTable({
-    rpivotTable(data=getSelectedDF()) #, onRefresh=htmlwidgets::JS("function(config) { Shiny.onInputChange('myPivotData', config); }"))
+    rpivotTable(data = getSelectedDF()) #, onRefresh=htmlwidgets::JS("function(config) { Shiny.onInputChange('myPivotData', config); }"))
   })
 
 })

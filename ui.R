@@ -23,7 +23,7 @@ selectizeRenderStr = "
 
 # Define UI for dataset viewer application
 shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
-  tabPanel("Explorer", icon = icon("list"),
+  tabPanel("Data Explorer", icon = icon("bar-chart-o"),
     sidebarLayout(
       sidebarPanel(
         
@@ -42,9 +42,9 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
         h3("Variable Selection"),
         
         wellPanel(
-          selectInput("dataset", "Dataframe:", choices = getDataFrames()),
+          selectInput("dataset", "Data frame:", choices = getDataFrames()),
           p(helpText("Choose the desired fields in the dropdowns",
-                     "and click Analyse to show an analysis."))
+                     "and click Analyze to show an analysis."))
         ),
         
         accordion("fieldsAccordion", 
@@ -71,7 +71,7 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
         
         p(
           # use actionButton rather than submitButton so that changing the dataframe dropdown automatically updates the field selects
-          actionButton("go", strong("Analyse"), class = "hvr-icon-spin"), #icon("play")), 
+          actionButton("go", strong("Analyze"), class = "hvr-icon-spin"), #icon("play")), 
           actionButton("deleteSelections", "Clear Selections", class = "hvr-icon-sink-away") #icon("trash-o"))
         )
         
@@ -97,10 +97,10 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
           ),
           
           navbarMenu("Data",
-                     tabPanel("TabPlot",
-                              checkboxInput("limittabplot", label = "Show selected variables only"),
-                              plotOutput("mytabplot")
-                     ),
+                     # tabPanel("TabPlot",
+                     #          checkboxInput("limittabplot", label = "Show selected variables only"),
+                     #          plotOutput("mytabplot")
+                     # ),
                      tabPanel("Table", dataTableOutput("mydt")
                      ),
                      tabPanel("PivotTable", rpivotTableOutput("pivotTable"))
@@ -116,44 +116,62 @@ shinyUI(navbarPage("Shiny-Explorer", position = "fixed-top",
     ) # sidebarLayout
   ), # tabPanel(Explorer)
   
-  navbarMenu("Import", icon = icon("list"),
-    tabPanel("Excel", icon = icon("list"),
+  navbarMenu("Upload Data", icon = icon("upload"),
+    tabPanel("Excel", icon = icon("file-excel-o"),
       sidebarLayout(
         sidebarPanel(   
           h3("Data Import"),
           wellPanel(
-            h4("Excel .xls/.xlsx:"),
+            h4("Excel (*.xls/*.xlsx)"),
             tags$hr(),
             fileInput('importFile', label = NULL, accept = c('.xls','.xlsx')),
             selectInput("excelsheets", "Sheet:", choices = c()),
-            textInput("xlsdataframe", "DataFrame Name:", "myxlsdf"),
+            tags$hr(),
+            textInput("xlsdataframe", "Data Frame Name:", "myXLSdf"),
             actionButton("assignxls", "Assign to DF")
           )
         ),
         mainPanel()
       )
     ),
-    tabPanel("CSV", icon = icon("list"),
+    tabPanel("CSV", icon = icon("table"),
       sidebarLayout(
        sidebarPanel(   
          h3("Data Import"),
          wellPanel(
+           h4("CSV File (*.csv)"),
+           tags$hr(),
+           fileInput('importCsvFile', label = NULL, accept = c('.csv')),
+           tags$hr(),
            h4("Import Parameters"),
            radioButtons('sep', 'Separator',
                         c(Comma = ',',
                           Semicolon = ';',
                           Tab = '\t'),
                         ','),
-           numericInput('sampleSize', 'Numer of Samples', value = 10000),
-           h4("CSV:"),
+           numericInput('sampleSize', 'Numer of Rows to Sample', value = 10000),
            tags$hr(),
-           fileInput('importCsvFile', label = NULL, accept = c('.csv')),
-           textInput("csvdataframe", "DataFrame Name:", "mycsvdf"),
+           textInput("csvdataframe", "Data Frame Name:", "myCSVdf"),
            actionButton("assigncsv", "Assign to DF")
          )
        ),
        mainPanel()
       )
+    ),
+    tabPanel("RDS", icon = icon("file-text-o"),
+      sidebarLayout(
+        sidebarPanel(   
+        h3("Data Import"),
+          wellPanel(
+            h4("RDS File (*.rds)"),
+            tags$hr(),
+            fileInput('importRdsFile', label = NULL, accept = c('.rds')),
+            textInput("rdsdataframe", "Data Frame Name:", "myRDSdf"),
+            actionButton("assignrds", "Assign to DF")
+          )
+        ),
+      mainPanel()
+        )
     )
   ) # navbarMenu(Import)
   # ,

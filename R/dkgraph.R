@@ -797,7 +797,6 @@ plot_odds<-function(x, title = NULL){
 
 autoplot.lm <- function(x, ..., which=c(1:3, 5), mfrow=c(1,1)){
   
-  require(grid)
   df <- fortify(x)
   df <- cbind(df, rows=1:nrow(df))
   
