@@ -1,4 +1,4 @@
-# Analysis: 2 Numeric Variables by 1 Factor Variable
+# Analysis: 2 Numerics by 1 Factor
 
 ## Inputs
 
@@ -9,18 +9,19 @@ Selected variables in dataframe mydf
 
 ## Scatter Plot
 
-```{r scatterplot, fig.width = 7, fig.height = 6}
-ggplot(mydf, aes(x = numeric1, y = numeric2, color = factor1)) +
+```{r scatterplot, fig.width=7, fig.height=6}
+ggplot(mydf, aes(x=numeric1, y=numeric2, color=factor1)) +
   geom_point()
 ```
 
 ## Linear regressions split by factor1
 
-```{r summary, comment = NA}
+```{r summary, comment=NA}
 require(plyr)
-.lm = dlply(mydf, "factor1", lm, formula = numeric2 ~ numeric1)
+.lm = dlply(mydf, "factor1", lm, formula = numeric2~numeric1)
 llply(.lm, anova)
 ```
+
 
 ### ANCOVA
 
@@ -30,7 +31,7 @@ Used to perform linear regression where there are repeated measures from the sam
 
 ```{r}
 require(lme4)
-mymodel = lmer(numeric1 ~ numeric2 + (1 | factor1), data = mydf)
+mymodel = lmer(numeric1 ~ numeric2 + (1 | factor1), data= mydf)
 mymodel
 anova(mymodel, lmer(numeric1 ~ 1 + (1 | factor1), data = mydf))
 ```

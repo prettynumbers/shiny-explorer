@@ -2,7 +2,7 @@
 require(ggplot2, quietly = T)
 ```
 
-# Analysis: Multiple Numeric Variables
+# Analysis: Multiple Numerics
 
 ## Inputs
 

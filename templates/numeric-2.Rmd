@@ -5,7 +5,7 @@ opts_chunk$set(comment = "") # remove the comment symbol from knitr output
 opts_chunk$set(message = F, warning = F) # unless debugging
 ```
 
-# Analysis: 2 Numeric Variables
+# Analysis: 2 Numerics
 
 ## Inputs
 
@@ -21,7 +21,7 @@ summary(mydf[, c("numeric1", "numeric2")])
 
 ## Scatter Plot
 
-```{r scatterplot, fig.width = 12, fig.height = 6}
+```{r scatterplot, fig.width=12, fig.height=6}
 ggplot(mydf, aes(x = numeric1, y = numeric2)) +
   geom_point() +
   geom_smooth()
@@ -29,11 +29,11 @@ ggplot(mydf, aes(x = numeric1, y = numeric2)) +
 
 ## Correlation Matrix
 
-```{r corrplot, fig.width = 12, fig.height = 6}
+```{r corrplot, fig.width=12, fig.height=6}
 dkPairs(mydf[, c("numeric1", "numeric2")])
 ```
 
-```{r corrplot2, fig.width = 12, fig.height = 6}
+```{r corrplot2, fig.width=12, fig.height=6}
 require(ez, quietly = T) 
 ezCor(mydf[, c("numeric1", "numeric2")])
 ```
@@ -42,24 +42,30 @@ ezCor(mydf[, c("numeric1", "numeric2")])
 
 Correlation coefficient (measure of how linear 1.0 = straight line). Values of > 0.7 are generally considered a large effect size.
 
-### Pearson Correlation
-
-```{r cor}
-with(mydf, cor(numeric1, numeric2, use = "pairwise.complete.obs", method = "pearson"))
+```{r pearson}
+with(mydf, cor(numeric1, numeric2))
 ```
 
-Test of significance of correlation coefficient
+Test of significance of correlation coefficient: Pearson
 
 ```{r cortest}
-with(mydf, cor.test(numeric1, numeric2, method = "pearson"))
+with(mydf, cor.test(numeric1, numeric2))
 ```
+
+### Reporting Correlations
+
+<% if (cor.test(mydf$numeric1, mydf$numeric2)$p.value < 0.05) { %> 
+There is a significant relationship between numeric1 and numeric2, *r =`r cor(mydf$numeric1, mydf$numeric2)`, `r dkpval(cor.test(mydf$numeric1, mydf$numeric2)$p.value)`*.
+<% } else { %>
+There is no significant relationship between numeric1 and numeric2 (Pearson p > 0.05)
+<% } %>
 
 ### R^2
 
 R^2 indicates how much of the variation in x1 is shared (and potentially explained by) x2.
 
 ```{r r2}
-with(mydf, cor(numeric1, numeric2, use = "pairwise.complete.obs")^2)
+with(mydf, cor(numeric1, numeric2)^2)
 ```
 
 ### Non-parametric tests
@@ -67,7 +73,7 @@ with(mydf, cor(numeric1, numeric2, use = "pairwise.complete.obs")^2)
 Test of significance: Spearman (non-parametric)
 
 ```{r spearman}
-with(mydf, cor.test(numeric1, numeric2, method = "spearman"))
+with(mydf, cor.test(numeric1, numeric2, method="spearman"))
 ```
 
 Test of significance: Kendall's Tau (non-parametric). Use if small dataset with many tied ranks.
@@ -90,7 +96,7 @@ mylm = lm(numeric2 ~ numeric1, data = mydf)
 summary(mylm)
 ```
 
-```{r regressionplot, fig.width = 12, fig.height = 6}
+```{r regressionplot, fig.width=12, fig.height=6}
 ggplot(mydf, aes(x = numeric1, y = numeric2)) + 
   geom_smooth(method = "lm", colour = "red", size = 1)  
 ```
@@ -101,7 +107,8 @@ The following graph plots the residual values against the fitted values. The dot
 - The spread of the residuals does not change along the x axis (homoskedasticity)
 - The residuals are evenly positioned above and below the regression line along the x axis (there is no pattern to location)
 
-```{r fig.width = 12, fig.height = 8}
+```{r fig.width=12, fig.height=8}
+# autoplot(mylm, which=1:6, mfrow=c(3,2))
 par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
 plot(mylm)
 ```
